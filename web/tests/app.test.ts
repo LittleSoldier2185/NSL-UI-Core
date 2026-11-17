@@ -390,3 +390,76 @@ describe('ไอคอนแบรนด์ (NSL Brand Pack)', () => {
     }
   });
 });
+
+describe('ธีมของหน้าเว็บ (สว่าง/มืด/ตามระบบ)', () => {
+  const btns = () => wrapper.findAll('header.top .uitheme button');
+  const attr = () => document.documentElement.dataset.theme;
+  // jsdom ในเครื่องนี้ไม่มี localStorage ที่ใช้ได้ — ใช้ที่เก็บในหน่วยความจำแทน
+  let mem: Map<string, string>;
+  let blocked = false;
+  beforeEach(() => {
+    mem = new Map();
+    blocked = false;
+    vi.stubGlobal('localStorage', {
+      getItem: (k: string) => mem.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        if (blocked) throw new Error('blocked');
+        mem.set(k, v);
+      },
+      removeItem: (k: string) => {
+        if (blocked) throw new Error('blocked');
+        mem.delete(k);
+      },
+    });
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    delete document.documentElement.dataset.theme;
+  });
+
+  it('มี 3 ปุ่ม (ตามระบบ/สว่าง/มืด) เริ่มต้น = ตามระบบ (ไม่มี data-theme)', () => {
+    expect(btns().map((b) => b.attributes('aria-label'))).toEqual(['ตามระบบ', 'สว่าง', 'มืด']);
+    expect(btns()[0]!.attributes('aria-pressed')).toBe('true');
+    expect(attr()).toBeUndefined();
+  });
+
+  it('กดมืด → <html data-theme="dark"> และจำไว้ ; กดสว่าง → light ; กลับตามระบบ → ลบ attribute และลบค่าที่จำ', async () => {
+    await btns()[2]!.trigger('click');
+    expect(attr()).toBe('dark');
+    expect(btns()[2]!.attributes('aria-pressed')).toBe('true');
+    expect(localStorage.getItem('nsl-palette-ui-theme')).toBe('dark');
+    await btns()[1]!.trigger('click');
+    expect(attr()).toBe('light');
+    expect(localStorage.getItem('nsl-palette-ui-theme')).toBe('light');
+    await btns()[0]!.trigger('click');
+    expect(attr()).toBeUndefined();
+    expect(localStorage.getItem('nsl-palette-ui-theme')).toBeNull();
+  });
+
+  it('เปลี่ยนธีมของหน้าเว็บ ไม่เปลี่ยนไฟล์ธีมที่กำลังแก้', async () => {
+    const before = await code();
+    await btns()[2]!.trigger('click');
+    expect(await code()).toBe(before);
+    await btns()[0]!.trigger('click');
+  });
+
+  it('localStorage ใช้ไม่ได้ (โหมดส่วนตัว) ก็ยังสลับได้ ไม่ล้ม', async () => {
+    blocked = true;
+    await btns()[2]!.trigger('click');
+    expect(attr()).toBe('dark');
+    blocked = false;
+    await btns()[0]!.trigger('click');
+  });
+
+  it('CSS : บังคับมืดมีตัวแปรครบเท่าโหมดมืดตามระบบ และกำหนด color-scheme', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const css = readFileSync(resolve(__dirname, '../src/style.css'), 'utf8');
+    const vars = (block: string) => [...block.matchAll(/(--[a-z-]+):/g)].map((m) => m[1]).sort();
+    const media = /@media \(prefers-color-scheme: dark\) \{\s*:root:not\(\[data-theme='light'\]\) \{([\s\S]*?)\}/.exec(css)![1]!;
+    const forced = /:root\[data-theme='dark'\] \{([\s\S]*?)\}/.exec(css)![1]!;
+    expect(vars(forced)).toEqual(vars(media));
+    expect(forced).toContain('color-scheme: dark');
+    expect(css).toMatch(/:root\[data-theme='light'\] \{\s*color-scheme: light;/);
+  });
+});

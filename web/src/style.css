@@ -55,6 +55,7 @@
 }
 
 :root[data-theme='dark'] {
+  color-scheme: dark;
   --bg: #0d1220;
   --panel: #161d2e;
   --field: #10172a;
@@ -63,15 +64,23 @@
   --line: #2b3550;
   --line-soft: #222a40;
   --brand: #6d55ff;
+  --on-brand: #ffffff;
   --brand-soft: #262056;
   --brand-ink: #b4a8ff;
   --top: #070e24;
+  --top-field: #121c3c;
+  --top-line: #26335a;
   --danger: #ff8a7a;
   --danger-soft: #3a1a17;
   --ok: #5fd99a;
   --ok-soft: #13301f;
   --warn: #f4d58a;
   --warn-soft: #382c0c;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
 }
 
 * {
@@ -1030,4 +1039,21 @@ select {
   .num {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ปุ่มธีมของหน้าเว็บ (บนแถบบนสีเข้ม) */
+.top .seg {
+  background: var(--top-field);
+  border-color: var(--top-line);
+}
+
+.top .seg button {
+  color: var(--top-muted);
+  min-height: 32px;
+  padding: 6px 9px;
+}
+
+.top .seg button.on {
+  background: #ffffff;
+  color: var(--top);
 }

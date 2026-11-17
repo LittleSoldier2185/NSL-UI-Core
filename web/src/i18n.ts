@@ -183,6 +183,10 @@ const dict = {
   previewMode: { th: 'โหมดของพรีวิว', en: 'Preview mode' },
   dismiss: { th: 'ปิด', en: 'Dismiss' },
   versionLabel: { th: 'เวอร์ชันเว็บ', en: 'Web version' },
+  uiTheme: { th: 'ธีมของหน้าเว็บนี้', en: 'Theme of this page' },
+  ui_system: { th: 'ตามระบบ', en: 'Match system' },
+  ui_light: { th: 'สว่าง', en: 'Light' },
+  ui_dark: { th: 'มืด', en: 'Dark' },
   extTitleHint: { th: 'สีที่ใช้เฉพาะในแอปนั้น — ไม่ตั้งก็ได้ ระบบคำนวณจากสีหลักให้', en: 'Colours only that app uses — optional; derived from your main colours if unset' },
 } as const;
 
