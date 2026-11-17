@@ -12,6 +12,7 @@ import 'pressable.dart';
 /// - [selected] : แถวถูกเลือก (เช่น โหมดเลือกหลายรายการ, รายการที่เปิดอยู่ในรายละเอียด) — พื้น `selected`
 /// - [active] : แถวกำลังถูกใช้งาน (เช่น เพลงที่กำลังเล่น) — พื้น `hover` และชื่อสี accent
 /// - [onTap] เป็น null = แถวแสดงผลอย่างเดียว (ไม่ใช่ปุ่ม ไม่มี hover/โฟกัส)
+/// - [trailing] ของแถวที่กดได้อยู่นอกพื้นที่กดของแถว : ใส่ปุ่มของตัวเองได้ (เมนู ⋮) โดยโปรแกรมอ่านหน้าจอยังเห็นและกดแล้วไม่ไปเรียก [onTap]
 class NslListRow extends StatelessWidget {
   const NslListRow({
     super.key,
@@ -22,6 +23,7 @@ class NslListRow extends StatelessWidget {
     this.selected = false,
     this.active = false,
     this.onTap,
+    this.onLongPress,
     this.semanticLabel,
   });
 
@@ -32,6 +34,9 @@ class NslListRow extends StatelessWidget {
   final bool selected;
   final bool active;
   final VoidCallback? onTap;
+
+  /// กดค้าง (ไม่บังคับ ; ใช้ได้เมื่อมี [onTap])
+  final VoidCallback? onLongPress;
 
   /// ไม่ระบุ = "ชื่อ, ข้อความรอง"
   final String? semanticLabel;
@@ -45,7 +50,9 @@ class NslListRow extends StatelessWidget {
     final subColor = t.legibleOn(c.textMuted, bg);
     final minH = t.controlHeight(touch: context.nslTouch) + t.gap * 1.5;
 
-    final content = Row(children: [
+    final label = semanticLabel ?? (subtitle == null ? title : '$title, $subtitle');
+    final radius = t.shape.md;
+    final main = Row(children: [
       if (leading != null) ...[leading!, SizedBox(width: t.gap * 1.5)],
       Expanded(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -53,7 +60,6 @@ class NslListRow extends StatelessWidget {
           if (subtitle != null) Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.textStyle(13, color: subColor)),
         ]),
       ),
-      if (trailing != null) ...[SizedBox(width: t.gap * 1.5), trailing!],
     ]);
     final padding = EdgeInsets.symmetric(horizontal: t.gap * 1.5, vertical: t.gap * 0.75);
 
@@ -61,28 +67,38 @@ class NslListRow extends StatelessWidget {
       return Semantics(
         container: true,
         selected: selected,
-        label: semanticLabel ?? (subtitle == null ? title : '$title, $subtitle'),
+        label: label,
         excludeSemantics: true,
         child: Container(
           constraints: BoxConstraints(minHeight: minH),
           padding: padding,
-          decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(t.shape.md)),
+          decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(radius)),
           alignment: Alignment.centerLeft,
-          child: content,
+          child: Row(children: [Expanded(child: main), if (trailing != null) ...[SizedBox(width: t.gap * 1.5), trailing!]]),
         ),
       );
     }
-    return NslPressable(
+    final pressable = NslPressable(
       onTap: onTap,
-      radius: t.shape.md,
-      background: bg,
+      onLongPress: onLongPress,
+      radius: radius,
+      background: trailing == null ? bg : Colors.transparent,
       overlay: c.hover,
       ring: c.accent,
-      semanticLabel: semanticLabel ?? (subtitle == null ? title : '$title, $subtitle'),
+      semanticLabel: label,
       selected: selected,
       minHeight: minH,
-      padding: padding,
-      child: content,
+      padding: trailing == null ? padding : padding.copyWith(right: 0),
+      child: main,
+    );
+    if (trailing == null) return pressable;
+    // trailing อยู่นอกพื้นที่กด : ปุ่มซ้อนข้างใน (เช่น เมนู ⋮) ยังมี semantics/โฟกัสของตัวเอง และกดแล้วไม่ไปเรียก onTap ของแถว
+    return DecoratedBox(
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(radius)),
+      child: Row(children: [
+        Expanded(child: pressable),
+        Padding(padding: EdgeInsets.only(left: t.gap * 1.5, right: t.gap * 1.5), child: trailing!),
+      ]),
     );
   }
 }

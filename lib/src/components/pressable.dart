@@ -19,6 +19,7 @@ class NslPressable extends StatefulWidget {
     this.minWidth = 0,
     this.border,
     this.selected,
+    this.onLongPress,
     this.padding = EdgeInsets.zero,
   });
 
@@ -26,6 +27,9 @@ class NslPressable extends StatefulWidget {
 
   /// null = ปิดใช้งาน
   final VoidCallback? onTap;
+
+  /// กดค้าง (ไม่บังคับ) — โปรแกรมอ่านหน้าจอได้ action longPress ด้วย
+  final VoidCallback? onLongPress;
   final double radius;
   final Color background;
 
@@ -59,6 +63,7 @@ class _NslPressableState extends State<NslPressable> {
       label: widget.semanticLabel,
       // excludeSemantics ตัด action ของ InkWell ทิ้ง → ต้องประกาศ onTap เองไม่งั้นโปรแกรมอ่านหน้าจอสั่งแตะไม่ได้
       onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
       excludeSemantics: true,
       child: ConstrainedBox(
         constraints: BoxConstraints(minHeight: widget.minHeight, minWidth: widget.minWidth),
@@ -70,6 +75,7 @@ class _NslPressableState extends State<NslPressable> {
           ),
           child: InkWell(
             onTap: widget.onTap,
+            onLongPress: widget.onLongPress,
             borderRadius: shape,
             hoverColor: widget.overlay,
             focusColor: widget.overlay,
