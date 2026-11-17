@@ -127,7 +127,10 @@ describe('หน้าแก้ไขธีม', () => {
 
   it('ไม่มี v-html และข้อความที่ผู้ใช้พิมพ์ถูก escape (ชื่อธีมที่มี HTML)', async () => {
     await wrapper.get('input[maxlength="80"]').setValue('<img src=x onerror=alert(1)>');
-    expect(wrapper.find('img').exists()).toBe(false);
+    // รูปที่มีในหน้าต้องเป็นไอคอนแบรนด์ของเราเท่านั้น (ไม่มี img ที่มาจากข้อความที่พิมพ์)
+    const imgs = wrapper.findAll('img');
+    expect(imgs.length).toBeGreaterThan(0);
+    expect(imgs.every((i) => (i.attributes('src') ?? '').includes('brand/') && i.attributes('onerror') === undefined && i.attributes('alt') === '')).toBe(true);
     expect(exported().name).toBe('<img src=x onerror=alert(1)>');
   });
 });
@@ -243,5 +246,32 @@ describe('วิธีใช้ไฟล์ (ตำแหน่งที่เ�
     expect(how()).toContain('Documents\\NSL\\Themes');
     expect(how()).toContain('no Launcher on Android');
     await select.setValue('th');
+  });
+});
+
+describe('ไอคอนแบรนด์ (NSL Brand Pack)', () => {
+  it('ทุกแอปมีไฟล์ไอคอนใน public/brand และปุ่มเลือกแอปแสดงไอคอนของแอปนั้น', async () => {
+    const { existsSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    for (const id of ['nebular', 'spectrum', 'lyra', 'orbit', 'palette']) {
+      expect(existsSync(resolve(__dirname, `../public/brand/${id}.svg`)), id).toBe(true);
+    }
+    expect(existsSync(resolve(__dirname, '../public/brand/favicon.ico'))).toBe(true);
+    const chips = wrapper.findAll('button.appchip');
+    expect(chips.map((c) => (c.find('img').attributes('src') ?? '').split('brand/').pop())).toEqual(['nebular.svg', 'spectrum.svg', 'lyra.svg', 'orbit.svg']);
+  });
+
+  it('ไอคอนเป็นภาพประกอบ (alt ว่าง) — ชื่อแอปเป็นข้อความอยู่แล้ว ไม่อ่านซ้ำ', () => {
+    expect(wrapper.findAll('button.appchip img').every((i) => i.attributes('alt') === '')).toBe(true);
+  });
+
+  it('ไฟล์ SVG ไม่มีสคริปต์/ลิงก์ภายนอก', async () => {
+    const { readFileSync, readdirSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const dir = resolve(__dirname, '../public/brand');
+    for (const f of readdirSync(dir).filter((n) => n.endsWith('.svg'))) {
+      const s = readFileSync(resolve(dir, f), 'utf8');
+      expect(/<script|<foreignObject|onload=|onclick=|javascript:|href=|<image/i.test(s), f).toBe(false);
+    }
   });
 });

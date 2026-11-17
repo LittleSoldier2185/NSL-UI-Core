@@ -378,6 +378,8 @@ select:focus-visible,
 }
 
 .appchip {
+  position: relative;
+  padding-left: 46px !important;
   font: inherit;
   text-align: left;
   display: grid;
@@ -388,6 +390,28 @@ select:focus-visible,
   background: var(--panel);
   color: var(--ink);
   cursor: pointer;
+}
+
+.appicon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+
+.brandline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brandicon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
 }
 
 .appchip span {

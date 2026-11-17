@@ -11,6 +11,9 @@ import { type Brightness, schema } from './core/tokens';
 import { useEditor } from './editor';
 import { type Key, lang, setLang, t } from './i18n';
 
+/** ไอคอนจาก NSL Brand Pack (public/brand/<id>.svg) — path สัมพัทธ์ตาม base ของการ build */
+const brand = (name: string) => `${import.meta.env.BASE_URL}brand/${name}`;
+
 const ed = useEditor();
 const { draft } = ed;
 
@@ -164,7 +167,7 @@ const densities = ['compact', 'normal', 'comfortable'] as const;
   <div class="app" @dragover.prevent @drop="onDrop">
     <header class="top">
       <div>
-        <h1>{{ t('title') }}</h1>
+        <h1 class="brandline"><img class="brandicon" :src="brand('palette.svg')" alt="" width="32" height="32" />{{ t('title') }}</h1>
         <p class="sub">{{ t('subtitle') }}</p>
       </div>
       <div class="top-right">
@@ -237,6 +240,7 @@ const densities = ['compact', 'normal', 'comfortable'] as const;
               :aria-pressed="ed.apps.value.includes(a.id)"
               @click="ed.toggleApp(a.id)"
             >
+              <img class="appicon" :src="brand(a.id + '.svg')" alt="" width="28" height="28" />
               <strong>{{ a.name }}</strong>
               <span>{{ a.product }}</span>
             </button>

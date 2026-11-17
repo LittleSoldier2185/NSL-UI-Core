@@ -35,3 +35,8 @@ npm run build      # -> dist/v<core>/  (ไม่เขียนทับเว�
 
 ## ที่เก็บไฟล์ธีม (บอกผู้ใช้ในหน้าเว็บ)
 ไฟล์ธีมอยู่ที่ `Documents\NSL\Themes` (Windows) ; ค่าตั้งภายในอยู่ที่ AppData ผู้ใช้ไม่ต้องยุ่ง ; Android ไม่มี NSL Launcher และแอปแชร์ธีมกันไม่ได้ ต้องนำเข้าทีละแอป — ดู `../Plan.md` 9.7
+
+## ไอคอนแบรนด์
+
+ไอคอนใน `public/brand/` (ปุ่มเลือกแอป, หัวหน้าเว็บ, favicon) คัดลอกมาจาก **NSL Brand Pack** (`D:\NSL Product\NSL-Brand-Pack`) — `apps/nsl-<แอป>/<แอป>_icon_rounded.svg` → `brand/<id>.svg` (id ตรงกับ `AppId` ; Nebula ของ Brand Pack = `nebular`), `nsl-palette` → `palette.svg`, `logo/favicon.ico`
+อัปเดตไอคอนให้คัดลอกทับไฟล์เหล่านี้ใหม่ ; เทสต์ตรวจว่ามีครบทุกแอปและ SVG ไม่มีสคริปต์/ลิงก์ภายนอก
