@@ -265,6 +265,147 @@ void main() {
     });
   });
 
+  group('NslProgressBar', () {
+    // ความกว้างของส่วนที่เติม = ColoredBox ชั้นในสุด (ชั้นนอก = ราง)
+    double fillWidth(WidgetTester t) => t.getSize(find.descendant(of: find.byType(NslProgressBar), matching: find.byType(ColoredBox)).last).width;
+
+    testWidgets('ความกว้างส่วนเติมตามค่า · ตัดค่านอกช่วง · NaN = 0', (tester) async {
+      Future<double> w(double v) async {
+        await _pump(tester, NslProgressBar(value: v, label: 'p'), light, width: 200);
+        return fillWidth(tester);
+      }
+
+      expect(await w(0.25), closeTo(50, 1e-6));
+      expect(await w(0), 0);
+      expect(await w(1), 200);
+      expect(await w(1.7), 200);
+      expect(await w(-0.3), 0);
+      expect(await w(double.nan), 0);
+    });
+
+    testWidgets('สีราง/สีเติมตามโทน · ความสูงตาม density · มุมกลม', (tester) async {
+      final c = light.colors;
+      for (final (tone, fill) in [(NslProgressTone.accent, c.accent), (NslProgressTone.success, c.success), (NslProgressTone.danger, c.danger)]) {
+        await _pump(tester, NslProgressBar(value: 0.5, label: 'p', tone: tone), light);
+        final boxes = tester.widgetList<ColoredBox>(find.descendant(of: find.byType(NslProgressBar), matching: find.byType(ColoredBox))).toList();
+        expect(boxes.first.color, c.border, reason: 'ราง $tone');
+        expect(boxes.last.color, fill, reason: 'เติม $tone');
+      }
+      final hs = <double>[];
+      for (final d in NslDensity.values) {
+        await _pump(tester, const NslProgressBar(value: 0.5, label: 'p'), _with(light, density: d));
+        hs.add(tester.getSize(find.byType(NslProgressBar)).height);
+      }
+      expect(hs[0], lessThan(hs[1]));
+      expect(hs[1], lessThan(hs[2]));
+      await _pump(tester, const NslProgressBar(value: 0.5, label: 'p'), light);
+      expect(tester.widget<ClipRRect>(find.byType(ClipRRect)).borderRadius, BorderRadius.circular(light.shape.pill));
+    });
+
+    testWidgets('Semantics: ชื่อ + ค่าเปอร์เซ็นต์ (ส่วนตกแต่งข้างในไม่ถูกอ่าน)', (tester) async {
+      final h = tester.ensureSemantics();
+      await _pump(tester, const NslProgressBar(value: 0.256, label: 'ดาวน์โหลด'), light);
+      expect(tester.getSemantics(find.bySemanticsLabel('ดาวน์โหลด')), isSemantics(label: 'ดาวน์โหลด', value: '26%'));
+      h.dispose();
+    });
+  });
+
+  group('NslEmptyState', () {
+    testWidgets('แสดงไอคอน/หัวข้อ/คำอธิบาย/ปุ่ม และปุ่มกดได้', (tester) async {
+      var n = 0;
+      await _pump(
+        tester,
+        NslEmptyState(
+          icon: Icons.inbox,
+          title: 'ยังไม่มีรายการ',
+          message: 'เริ่มจากสร้างรายการแรกของคุณ',
+          action: NslButton(label: 'สร้าง', kind: NslButtonKind.primary, onPressed: () => n++),
+        ),
+        light,
+      );
+      expect(find.byIcon(Icons.inbox), findsOneWidget);
+      expect(find.text('ยังไม่มีรายการ'), findsOneWidget);
+      expect(find.text('เริ่มจากสร้างรายการแรกของคุณ'), findsOneWidget);
+      await tester.tap(find.byType(NslButton));
+      expect(n, 1);
+    });
+
+    testWidgets('สีหัวข้อ=text · คำอธิบาย=textMuted · ไอคอน=icon ; ส่วนที่ไม่ระบุไม่แสดง', (tester) async {
+      await _pump(tester, const NslEmptyState(title: 'T', message: 'M', icon: Icons.inbox), light);
+      expect(tester.widget<Text>(find.text('T')).style!.color, light.colors.text);
+      expect(tester.widget<Text>(find.text('M')).style!.color, light.colors.textMuted);
+      expect(tester.widget<Icon>(find.byIcon(Icons.inbox)).color, light.colors.icon);
+      await _pump(tester, const NslEmptyState(title: 'T'), light);
+      expect(find.byType(Icon), findsNothing);
+      expect(find.byType(NslButton), findsNothing);
+      expect(find.text('M'), findsNothing);
+    });
+
+    testWidgets('จัดกึ่งกลาง · ข้อความกว้างไม่เกิน 360 แม้พื้นที่กว้างมาก', (tester) async {
+      // หน้าจอทดสอบกว้าง 800 ; ใช้ 700 ให้พอดีหน้าจอ (ถ้าเกินจะถูกบีบ และจุดกึ่งกลางเพี้ยน)
+      await _pump(tester, SizedBox(height: 300, child: NslEmptyState(title: 'T' * 200, message: 'M' * 400)), light, width: 700);
+      final title = tester.getRect(find.text('T' * 200));
+      expect(title.width, lessThanOrEqualTo(360));
+      expect(title.center.dx, closeTo(350, 1)); // กึ่งกลางของพื้นที่กว้าง 700
+    });
+
+    testWidgets('พื้นที่พอ = เนื้อหากึ่งกลางแนวตั้ง · พื้นที่ไม่พอ = เลื่อนได้ (ไม่ล้น)', (tester) async {
+      await _pump(tester, const SizedBox(height: 400, child: NslEmptyState(title: 'T')), light, width: 300);
+      final area = tester.getRect(find.byType(NslEmptyState));
+      expect(tester.getRect(find.text('T')).center.dy, closeTo(area.center.dy, 1));
+      await _pump(tester, SizedBox(height: 80, child: NslEmptyState(icon: Icons.inbox, title: 'T', message: 'M' * 200)), light, width: 150);
+      expect(tester.takeException(), isNull);
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      // เลื่อนลงไปถึงข้อความท้ายสุดได้
+      await tester.drag(find.byType(NslEmptyState), const Offset(0, -500));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('ไอคอนเป็นของตกแต่ง : ไม่ถูกอ่านโดยโปรแกรมอ่านหน้าจอ', (tester) async {
+      final h = tester.ensureSemantics();
+      await _pump(tester, const NslEmptyState(title: 'ว่าง', icon: Icons.inbox), light);
+      expect(find.bySemanticsLabel('ว่าง'), findsOneWidget);
+      // `find.semantics` ไม่มีตัวหาตามไอคอน → ตรวจว่าไอคอนอยู่ใต้ ExcludeSemantics ของ component เอง
+      expect(
+        find.descendant(of: find.byType(NslEmptyState), matching: find.ancestor(of: find.byIcon(Icons.inbox), matching: find.byType(ExcludeSemantics))),
+        findsOneWidget,
+      );
+      h.dispose();
+    });
+
+    testWidgets('ไม่ overflow : พื้นที่แคบ + ตัวอักษร 1.2 + system 1.5 ทุก density', (tester) async {
+      for (final d in NslDensity.values) {
+        await _pump(
+          tester,
+          SizedBox(
+            height: 500,
+            child: NslEmptyState(
+              icon: Icons.inbox,
+              title: 'หัวข้อยาวมากสำหรับทดสอบการตัดบรรทัดภาษาไทย',
+              message: 'คำอธิบายยาวมากมาก ' * 8,
+              action: NslButton(label: 'ปุ่มที่มีข้อความยาวมากเหมือนกัน', onPressed: () {}),
+            ),
+          ),
+          _with(light, density: d, type: const NslType(scale: 1.2)),
+          width: 150,
+          systemTextScale: 1.5,
+        );
+        expect(tester.takeException(), isNull, reason: d.name);
+      }
+    });
+
+    for (final e in _themes.entries) {
+      for (final b in Brightness.values) {
+        test('contrast ข้อความ ${e.key} ${b.name} ≥ 4.5 บน surface', () {
+          final c = _base(e.value, b).colors;
+          expect(contrastRatio(c.text, c.surface), greaterThanOrEqualTo(4.5));
+          expect(contrastRatio(c.textMuted, c.surface), greaterThanOrEqualTo(4.5));
+        });
+      }
+    }
+  });
+
   group('NslGallery ส่วน Components', () {
     testWidgets('พรีวิวด้วย tokens ที่ส่งเข้ามา ไม่ใช่ธีมของแอปที่ถือ Gallery', (tester) async {
       final dark = _base(kBuiltinDev, Brightness.dark);
@@ -313,6 +454,7 @@ void main() {
                   Row(children: [for (final i in [Icons.add, Icons.remove]) NslIconButton(icon: i, tooltip: 't', onPressed: () {})]),
                   const NslPanel(tone: NslPanelTone.raised, child: Text(longText)),
                   for (final tone in NslBadgeTone.values) NslBadge(longText, tone: tone, icon: Icons.info),
+                  for (final tone in NslProgressTone.values) NslProgressBar(value: 0.4, label: longText, tone: tone),
                 ]))),
                 t,
                 width: 180,

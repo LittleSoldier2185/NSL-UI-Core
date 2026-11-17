@@ -3,6 +3,17 @@
 กติกาเวอร์ชัน: `schema` ของไฟล์ `.nslt` เป็นจำนวนเต็ม เปลี่ยนเฉพาะเมื่อโครงสร้างแตกหัก ; เวอร์ชัน core (`major.minor`) เพิ่มได้เฉพาะ token ใหม่
 **ห้ามลบหรือเปลี่ยนความหมายของคีย์เดิม** (แอป/editor รุ่นเก่าต้องอ่านไฟล์จากรุ่นใหม่ได้ โดยข้ามคีย์ที่ไม่รู้จักและเก็บกลับตอนบันทึก)
 
+## 1.2.0 — 2026-11-17
+
+เพิ่มอย่างเดียว — **ชุด component กลาง** (Dart เท่านั้น) ; **ไม่แตะ token / schema / รูปแบบไฟล์ `.nslt`** จึง **`kNslCoreVersion` ยังเป็น `1.1`** (เว็บ NSL Palette, fixture, ตราในไฟล์ธีม และแอปที่ใช้ core 1.1 ไม่ต้องเปลี่ยนอะไร) — เลขเวอร์ชันแพ็กเกจ `pubspec.yaml` เพิ่มเป็น 1.2.0 เพราะมี API ใหม่
+
+- การเข้าถึง token : `NslTheme` (ThemeExtension), `NslThemeScope`, `context.nsl` (ไม่มี extension = ใช้ `nsl.default` ตามโหมดของ Theme), `context.nslTouch`
+- ตัวช่วยกลาง : `NslTokens.controlHeight({touch})`, `gap`, `textStyle(...)`, `legibleOn(fg, bg)` (ปรับสีตัวอักษรให้ผ่าน 4.5:1 เฉพาะเมื่อไม่ผ่าน)
+- component : `NslButton` (primary/secondary/danger/ghost), `NslIconButton`, `NslPanel` (surface/raised/sunken), `NslBadge` (6 โทน), `NslProgressBar`, `NslEmptyState`
+  - ค่าทั้งหมดมาจาก token (สี, มุมโค้ง `shape`, ระยะ/ความสูงตาม `density`, ฟอนต์/ขนาดตาม `type`, เงาตาม `elevation`) — มีเทสต์ guard ห้ามฮาร์ดโค้ดสี/มุมโค้ง/ขนาดตัวอักษรในไฟล์ component
+  - จอสัมผัสพื้นที่แตะ ≥ 44 · Semantics ครบ (ปุ่มมี action แตะ) · โฟกัสคีย์บอร์ดเห็นวงชัด · contrast ≥ 4.5 ทุกธีมในตัว × 2 โหมด (ตรวจจากสีที่เรนเดอร์จริง)
+- `NslGallery` : เพิ่มส่วน "Components" (พรีวิวด้วย `tokens` ที่ส่งเข้ามา) — ข้อความเดิมของ Gallery ไม่เปลี่ยน
+
 ## 1.1.0 — 2026-11-16
 
 เพิ่มอย่างเดียว (ไฟล์/แอปจาก 1.0 ใช้ต่อได้ทั้งหมด):

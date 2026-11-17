@@ -8,7 +8,7 @@
 | **NSL Palette** (Vue 3 + TS) | `web/` | เว็บที่ทำงานในเบราว์เซอร์ล้วน ๆ สำหรับปรับธีมแบบลึกแล้วดาวน์โหลดเป็น `.nslt` |
 | **Schema** | `schema/tokens.schema.json` | รายชื่อ token, ช่วงค่า, preset และธีมในตัว สร้างจาก Dart |
 
-เวอร์ชันปัจจุบัน: **1.1.0** — ดูประวัติใน [`CHANGELOG.md`](CHANGELOG.md), แผนทั้งหมดใน [`Plan.md`](Plan.md), ความคืบหน้าใน [`progress.md`](progress.md)
+เวอร์ชันปัจจุบัน: **1.2.0** (รูปแบบ token/ไฟล์ธีม core 1.1) — ดูประวัติใน [`CHANGELOG.md`](CHANGELOG.md), แผนทั้งหมดใน [`Plan.md`](Plan.md), ความคืบหน้าใน [`progress.md`](progress.md)
 
 ## แนวคิด
 
@@ -41,6 +41,15 @@ dependencies:
 - **ที่เก็บธีม** — `NslThemeStore`, `NslThemeController`, `NslMemoryThemeStorage` พร้อม watcher และ safe mode
 - **ธีมในตัว** — `nsl.default`, `nsl.nebular`, `nsl.spectrum`, `nsl.lyra.paper` (id เหล่านี้ห้ามเปลี่ยน)
 - **Widget** — `NslAppearancePanel` (ชุดปรับแต่ง lite) และ `NslGallery`
+- **Component กลาง** — `NslButton`, `NslIconButton`, `NslPanel`, `NslBadge`, `NslProgressBar`, `NslEmptyState` ; อ่านค่าทั้งหมดจาก token ผ่าน `context.nsl` (ไม่ได้แนบ `NslTheme` ก็ใช้ได้ — ถอยไปธีมในตัว) ; ใส่ธีมให้ทั้งต้นไม้ด้วย `ThemeData(extensions: [NslTheme(tokens)])` หรือเฉพาะบางส่วนด้วย `NslThemeScope(tokens:, child:)` ; ดูหน้าตาทั้งหมดได้ใน `NslGallery`
+  ```dart
+  NslPanel(
+    child: Column(children: [
+      NslBadge('พร้อมใช้', tone: NslBadgeTone.success),
+      NslButton(label: 'บันทึก', kind: NslButtonKind.primary, onPressed: save),
+    ]),
+  )
+  ```
 - **ฟอนต์** — Noto Sans Thai (SIL OFL, ดู `assets/fonts/OFL.txt`) อ้างด้วยชื่อ `packages/nsl_ui/Noto Sans Thai`
 
 ### เทสต์

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../components/nsl_badge.dart';
 import '../components/nsl_button.dart';
+import '../components/nsl_empty_state.dart';
 import '../components/nsl_icon_button.dart';
 import '../components/nsl_panel.dart';
+import '../components/nsl_progress_bar.dart';
 import '../contrast/contrast.dart';
 import '../theme/component_metrics.dart';
 import '../theme/nsl_theme.dart';
@@ -84,6 +86,24 @@ class _Components extends StatelessWidget {
       ]),
       SizedBox(height: gap),
       const NslPanel(tone: NslPanelTone.raised, child: Text('Nsl panel (raised)')),
+      SizedBox(height: gap),
+      for (final tone in NslProgressTone.values) ...[
+        SizedBox(width: 240, child: NslProgressBar(value: 0.6, label: 'Nsl progress ${tone.name}', tone: tone)),
+        SizedBox(height: gap),
+      ],
+      // ความสูงจำกัด : Gallery เองเลื่อนอยู่แล้ว และ NslEmptyState เลื่อนได้ในตัว (ห้ามซ้อนเลื่อนในพื้นที่สูงไม่จำกัด)
+      NslPanel(
+        tone: NslPanelTone.sunken,
+        child: SizedBox(
+          height: 180,
+          child: NslEmptyState(
+            icon: Icons.inbox,
+            title: 'Nsl empty state',
+            message: 'Nothing here yet',
+            action: NslButton(label: 'Nsl create', kind: NslButtonKind.primary, onPressed: noop),
+          ),
+        ),
+      ),
     ]);
   }
 }
