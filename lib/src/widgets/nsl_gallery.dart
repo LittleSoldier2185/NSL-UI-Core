@@ -79,6 +79,13 @@ class _Components extends StatelessWidget {
         NslButton(label: 'Nsl danger', kind: NslButtonKind.danger, onPressed: noop),
         NslButton(label: 'Nsl ghost', kind: NslButtonKind.ghost, onPressed: noop),
         const NslButton(label: 'Nsl disabled', onPressed: null),
+        NslButton(label: 'Nsl success', kind: NslButtonKind.success, onPressed: noop),
+        NslButton(label: 'Nsl warning', kind: NslButtonKind.warning, onPressed: noop),
+        NslButton(label: 'Nsl info', kind: NslButtonKind.info, onPressed: noop),
+        NslButton(label: 'Nsl link', kind: NslButtonKind.link, onPressed: noop),
+        NslButton(label: 'Nsl outline', kind: NslButtonKind.primary, outline: true, onPressed: noop),
+        NslButton(label: 'Nsl small', size: NslButtonSize.sm, onPressed: noop),
+        NslButton(label: 'Nsl large', size: NslButtonSize.lg, onPressed: noop),
       ]),
       SizedBox(height: gap),
       Wrap(spacing: gap, runSpacing: gap, crossAxisAlignment: WrapCrossAlignment.center, children: [

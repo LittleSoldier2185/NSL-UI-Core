@@ -446,7 +446,7 @@ elevation.strength: 0.0 – 1.5            # คูณความเข้ม�
 | ตัวช่วย | Spacing/Typography/Color utilities | ◐ `gap`, `textStyle`, token สี — ไม่ทำ utility class |
 
 **เฟสที่วางแผน** (ต่อจากเฟส 18 ; แต่ละเฟส = โค้ด + เทสต์ + Gallery + เอกสาร + commit)
-- **เฟส 19** — ปุ่มให้ครบแบบ Bootstrap : ขนาด `sm/md/lg`, ชนิด `success/warning/info/link`, แบบ `outline`, `loading`, ปุ่มเต็มความกว้าง ; badge แบบ `pill`/ขนาด — **ของเดิมไม่เปลี่ยนความหมาย**
+- **เฟส 19 — ทำแล้ว 2026-11-17** — ปุ่มแบบ Bootstrap : ขนาด `sm/md/lg`, ชนิด `success/warning/info/link`, `outline`, `loading` (ปุ่มเต็มความกว้างมีอยู่แล้ว = `expand` ; `NslBadge` เป็นแบบ pill อยู่แล้ว จึงไม่แก้) — ของเดิมไม่เปลี่ยนความหมาย
 - **เฟส 20** — `NslAlert` (5 โทน, ปิดได้, ไอคอน), `NslSpinner`, `NslCloseButton`
 - **เฟส 21** — ฟอร์ม : `NslTextField` (ป้าย/ข้อความช่วย/ข้อผิดพลาด/ขนาด), `NslCheckbox`/`NslSwitch`/`NslRadio` แบบมีป้ายคลิกได้, `NslSelect` ; ไดอะล็อก `NslDialog`/`NslConfirmDialog`/`NslPromptDialog` ; `NslToast`
 - **เฟส 22** — `NslTabs`, `NslSegmented` (button group), `NslAccordion`, `NslMenu`, `NslPanel` มีส่วนหัว/ท้าย
