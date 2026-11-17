@@ -421,3 +421,34 @@ elevation.strength: 0.0 – 1.5            # คูณความเข้ม�
 5. ทีหลัง — `NslAdaptive`, `NslReleaseNotes`, `NslKbd`
 - ทุกเฟสยังคง : เพิ่มอย่างเดียว · ไม่แตะแอปจริง/สำเนาโดยไม่ได้รับอนุญาต · ไม่เพิ่ม dependency · Launcher ไม่เกี่ยวข้อง
 - **งานค้างด้านโทเค็นของชั้น 2 :** ส่วนขยาย `orbit` ยังไม่มีใน core (Orbit ยังไม่ได้ย้าย — เฟส 11)
+
+### 9.10 ทิศทางใหม่ : ให้ชุด component ใกล้เคียง Bootstrap (2026-11-17)
+
+**การตัดสินใจ (ผู้ใช้สั่ง "อยากให้ใกล้เคียง bootstrap")** — เดิมเพิ่ม component เฉพาะที่ ≥ 2 แอปเขียนซ้ำ (กฎข้อ 2 ใน 9.9) ตอนนี้เพิ่ม **ชั้น "ชุดมาตรฐานแบบ Bootstrap"** : component พื้นฐานที่ไม่ผูกโดเมน เพิ่มได้ **แม้ยังไม่มีแอปซ้ำ** ถ้าเป็นของที่ Bootstrap มีและแอปทุกตัวจะได้ใช้ ; กฎอื่นเดิมไม่ลด : อ่านค่าจาก token เท่านั้น (guard test) · contrast ≥ 4.5 ทุกธีม × 2 โหมด · semantics/คีย์บอร์ด/พื้นที่แตะ ≥ 44 บนจอสัมผัส · เพิ่มอย่างเดียว · ไม่เพิ่ม dependency · เทสต์รอบด้านก่อน commit ต่อเฟส
+**ยังไม่ทำ (ตั้งใจ) :** grid/breakpoint/utility class (Flutter มี `Row`/`Column`/`LayoutBuilder`) · JavaScript plugin · carousel/scrollspy/offcanvas เต็มรูป (ผูกเว็บ/ซับซ้อน คุ้มน้อย)
+
+**ตารางเทียบ Bootstrap → nsl_ui** (✔ มีแล้ว · ◐ มีบางส่วน · ✗ ยังไม่มี → เฟสที่วางแผน)
+
+| กลุ่ม | Bootstrap | nsl_ui |
+|---|---|---|
+| ปุ่ม | Buttons (สี 8, outline, ขนาด sm/lg, block, loading) | ◐ `NslButton` 4 ชนิด · ✗ ขนาด sm/lg, success/warning/info, outline, loading → เฟส 19 |
+| ปุ่ม | Close button · Button group | ✗ `NslCloseButton` (เฟส 20) · `NslSegmented` (เฟส 22) |
+| ป้าย | Badges (สี, pill) | ✔ `NslBadge` 6 โทน |
+| การ์ด | Card (หัว/ท้าย) | ◐ `NslPanel` · ✗ ส่วนหัว/ท้าย → เฟส 22 |
+| รายการ | List group | ✔ `NslListRow` |
+| นำทาง | Nav / Navbar | ✔ `NslNavItem` · ✗ `NslTabs` → เฟส 22 |
+| นำทาง | Breadcrumb · Pagination | ✗ → เฟส 23 |
+| ความคืบหน้า | Progress · Spinners | ✔ `NslProgressBar` · ✗ `NslSpinner` → เฟส 20 |
+| แจ้งเตือน | Alerts · Toasts | ✗ `NslAlert` (เฟส 20) · `NslToast` (เฟส 21) |
+| ฟอร์ม | Form controls (input + label + help + error) · Checks/Switches/Radios · Select · Range | ◐ ธีมของ Material ครบ (เฟส 16) · ✗ ตัวห่อที่มีป้าย/ข้อความช่วย/ข้อผิดพลาด → เฟส 21 |
+| ซ้อนทับ | Modal · Dropdown · Tooltip · Popover | ◐ ธีม dialog/เมนู/tooltip · ✗ `NslDialog`/`NslConfirmDialog`/`NslPromptDialog` (เฟส 21) · `NslMenu` (เฟส 22) |
+| เนื้อหา | Accordion/Collapse · Table · Placeholder(skeleton) | ✗ → เฟส 22–23 |
+| ตัวช่วย | Spacing/Typography/Color utilities | ◐ `gap`, `textStyle`, token สี — ไม่ทำ utility class |
+
+**เฟสที่วางแผน** (ต่อจากเฟส 18 ; แต่ละเฟส = โค้ด + เทสต์ + Gallery + เอกสาร + commit)
+- **เฟส 19** — ปุ่มให้ครบแบบ Bootstrap : ขนาด `sm/md/lg`, ชนิด `success/warning/info/link`, แบบ `outline`, `loading`, ปุ่มเต็มความกว้าง ; badge แบบ `pill`/ขนาด — **ของเดิมไม่เปลี่ยนความหมาย**
+- **เฟส 20** — `NslAlert` (5 โทน, ปิดได้, ไอคอน), `NslSpinner`, `NslCloseButton`
+- **เฟส 21** — ฟอร์ม : `NslTextField` (ป้าย/ข้อความช่วย/ข้อผิดพลาด/ขนาด), `NslCheckbox`/`NslSwitch`/`NslRadio` แบบมีป้ายคลิกได้, `NslSelect` ; ไดอะล็อก `NslDialog`/`NslConfirmDialog`/`NslPromptDialog` ; `NslToast`
+- **เฟส 22** — `NslTabs`, `NslSegmented` (button group), `NslAccordion`, `NslMenu`, `NslPanel` มีส่วนหัว/ท้าย
+- **เฟส 23** — `NslTable`, `NslBreadcrumb`, `NslPagination`, `NslSkeleton`
+- **เฟส 24** — รอบรวม : ทดลองชุดทั้งหมดในสำเนา Orbit, ปรับตามผล, เอกสารตารางเทียบฉบับสุดท้าย
