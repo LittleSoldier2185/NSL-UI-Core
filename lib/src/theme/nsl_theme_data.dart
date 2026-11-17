@@ -27,6 +27,9 @@ ThemeData buildNslThemeData(NslTokens t, {TargetPlatform? platform}) {
   final accentOnSurface = t.legibleOn(c.accentInk, c.surface);
   final accentOnSelected = t.legibleOn(c.accentInk, c.selected);
   final inverseText = t.legibleOn(c.bg, c.text);
+  // snackbar : สว่าง = พื้นเข้ม (text) ตัวอักษรสว่าง ; มืด = พื้นเข้มยก (surfaceRaised) ตัวอักษรสว่าง — ไม่กลับเป็นแถบสว่างบนหน้ามืด (ตรงกับ Orbit/Nebular)
+  final snackBg = t.brightness == Brightness.dark ? c.surfaceRaised : c.text;
+  final snackText = t.brightness == Brightness.dark ? t.legibleOn(c.text, snackBg) : inverseText;
 
   BorderRadius r(double v) => BorderRadius.circular(v);
   RoundedRectangleBorder shape(double radius, {BorderSide side = BorderSide.none}) => RoundedRectangleBorder(borderRadius: r(radius), side: side);
@@ -154,9 +157,9 @@ ThemeData buildNslThemeData(NslTokens t, {TargetPlatform? platform}) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(t.shape.xl))),
     ),
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: c.text,
-      contentTextStyle: t.textStyle(14, color: inverseText),
-      actionTextColor: t.legibleOn(c.accentTint, c.text),
+      backgroundColor: snackBg,
+      contentTextStyle: t.textStyle(14, color: snackText),
+      actionTextColor: t.brightness == Brightness.dark ? t.legibleOn(c.accent, snackBg) : t.legibleOn(c.accentTint, c.text),
       behavior: SnackBarBehavior.floating,
       shape: shape(t.shape.md),
     ),

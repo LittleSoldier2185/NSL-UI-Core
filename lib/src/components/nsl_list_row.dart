@@ -45,7 +45,6 @@ class NslListRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.nsl, c = t.colors;
     final bg = selected ? c.selected : (active ? c.hover : Colors.transparent);
-    final emphasised = selected || active;
     final titleColor = active ? t.legibleOn(c.accentInk, bg) : t.legibleOn(c.text, bg);
     final subColor = t.legibleOn(c.textMuted, bg);
     final minH = t.controlHeight(touch: context.nslTouch) + t.gap * 1.5;
@@ -56,7 +55,7 @@ class NslListRow extends StatelessWidget {
       if (leading != null) ...[leading!, SizedBox(width: t.gap * 1.5)],
       Expanded(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.textStyle(15, weight: emphasised ? FontWeight.w600 : FontWeight.w500, color: titleColor)),
+          Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.textStyle(15, weight: active ? FontWeight.w700 : (selected ? FontWeight.w600 : FontWeight.w500), color: titleColor)),
           if (subtitle != null) Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.textStyle(13, color: subColor)),
         ]),
       ),

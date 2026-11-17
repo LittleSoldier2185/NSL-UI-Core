@@ -363,7 +363,7 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 400));
         final snack = tester.widget<Material>(find.descendant(of: find.byType(SnackBar), matching: find.byType(Material)).first);
-        expect(snack.color, c.text, reason: 'snackbar ${b.name}');
+        expect(snack.color, b == Brightness.dark ? c.surfaceRaised : c.text, reason: 'snackbar ${b.name}');
         expect(tester.takeException(), isNull);
       }
     });

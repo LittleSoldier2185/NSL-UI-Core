@@ -9,6 +9,7 @@
 
 - **`buildNslThemeData(tokens, {platform})`** : สร้าง `ThemeData` ของ Material จาก token ทั้งชุด (ColorScheme ครบ + component themes ของปุ่ม/ช่องกรอก/dialog/เมนู/snackbar/tooltip/switch/checkbox/radio/chip/segmented/slider/listTile/tab/navigationBar ฯลฯ) พร้อมแนบ `NslTheme` — ตัวควบคุมของ Material ตรงกับ component ของ nsl_ui ; เพิ่มอย่างเดียว แอปที่มี `buildTheme` เองใช้ต่อได้
 - การเข้าถึง token : `NslTheme` (ThemeExtension), `NslThemeScope`, `context.nsl` (ไม่มี extension = ใช้ `nsl.default` ตามโหมดของ Theme), `context.nslTouch`
+- snackbar ของ `buildNslThemeData` โหมดมืดใช้พื้น `surfaceRaised` (ไม่กลับเป็นแถบสว่าง) ; `NslListRow` เพิ่ม `onLongPress` และ `trailing` อยู่นอกพื้นที่กดของแถว ; แถว `active` ชื่อหนา w700
 - ตัวช่วยกลาง : `NslTokens.controlHeight({touch})`, `gap`, `textStyle(...)`, `legibleOn(fg, bg)` (ปรับสีตัวอักษรให้ผ่าน 4.5:1 เฉพาะเมื่อไม่ผ่าน)
 - component : `NslButton` (primary/secondary/danger/ghost), `NslIconButton`, `NslPanel` (surface/raised/sunken), `NslBadge` (6 โทน), `NslProgressBar`, `NslEmptyState`, `NslListRow` (ภาพนำ + ชื่อ + รอง + ท้ายแถว, สถานะ selected/active), `NslNavItem` (ไอคอน + ป้ายชื่อ + ป้ายเลข, แบบเต็ม/ย่อ)
 - **`NslColorPicker`** : ตัวเลือกสีอิสระ (พื้นที่ความสด/ความสว่าง + แถบเฉดสี + HEX + สีสำเร็จรูป) เป็นส่วนเนื้อหา ไม่มีปุ่มตกลง/ยกเลิก — ครอบด้วย dialog/sheet ของแอปเอง ; `NslColorPickerStrings` (th/en)

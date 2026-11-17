@@ -94,7 +94,7 @@ void main() {
       await _pump(tester, NslListRow(title: 't', selected: true, onTap: () {}), light);
       expect(tester.widget<Text>(find.text('t')).style!.fontWeight, FontWeight.w600);
       await _pump(tester, NslListRow(title: 't', active: true, onTap: () {}), light);
-      expect(tester.widget<Text>(find.text('t')).style!.fontWeight, FontWeight.w600);
+      expect(tester.widget<Text>(find.text('t')).style!.fontWeight, FontWeight.w700);
       expect(tester.widget<Text>(find.text('t')).style!.color, light.legibleOn(c.accentInk, c.hover));
     });
 
