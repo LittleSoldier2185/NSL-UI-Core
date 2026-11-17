@@ -10,6 +10,7 @@ export 'src/contrast/contrast_report.dart';
 export 'src/derive/derive.dart';
 export 'src/editor/theme_draft.dart';
 export 'src/fonts/font_info.dart';
+export 'src/fonts/font_store.dart';
 export 'src/format/nslt_codec.dart';
 export 'src/format/resolve.dart';
 export 'src/format/theme_spec.dart';

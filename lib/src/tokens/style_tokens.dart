@@ -94,10 +94,10 @@ class NslType {
   static const double minScale = 0.9, maxScale = 1.2;
   static const double minMinSize = 8, maxMinSize = 16;
 
+  /// ฟอนต์หลักของบทบาท : ถ้ามีเฉพาะช่องไทย (ช่องละตินว่าง) หรือถูกจัดให้ไทยก่อน → ฟอนต์ไทย (ไม่งั้น Noto ซึ่งมีอักษรไทยอยู่แล้วจะบังฟอนต์ไทยที่ผู้ใช้เลือก)
   String _primary(String role, String? latin, String? thai) {
-    final l = latin ?? (role == 'family' ? kNslThaiFont : null);
-    if (thai != null && thaiFirst.contains(role)) return thai;
-    return l ?? kNslThaiFont;
+    if (thai != null && (latin == null || thaiFirst.contains(role))) return thai;
+    return latin ?? kNslThaiFont;
   }
 
   List<String> _chain(String primary, String? latin, String? thai) {

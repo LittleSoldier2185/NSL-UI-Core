@@ -240,10 +240,10 @@ void main() {
       expect(t.fallback.first, 'Inter');
     });
 
-    test('only a Thai slot: the Latin part stays on Noto', () {
+    test('only a Thai slot: Thai font first, Noto behind it for letters it lacks', () {
       const t = NslType(familyThai: 'Sarabun');
-      expect(t.effectiveFamily, kNslThaiFont);
-      expect(t.fallback.first, 'Sarabun');
+      expect(t.effectiveFamily, 'Sarabun');
+      expect(t.fallback.first, kNslThaiFont);
     });
 
     test('content role follows its own slots and falls back to the UI font', () {
