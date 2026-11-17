@@ -38,5 +38,5 @@ npm run build      # -> dist/v<core>/  (ไม่เขียนทับเว�
 
 ## ไอคอนแบรนด์
 
-ไอคอนใน `public/brand/` (ปุ่มเลือกแอป, หัวหน้าเว็บ, favicon) คัดลอกมาจาก **NSL Brand Pack** (`D:\NSL Product\NSL-Brand-Pack`) — `apps/nsl-<แอป>/<แอป>_icon_rounded.svg` → `brand/<id>.svg` (id ตรงกับ `AppId` ; Nebula ของ Brand Pack = `nebular`), `nsl-palette` → `palette.svg`, `logo/favicon.ico`
+ไอคอนใน `public/brand/` (ปุ่มเลือกแอป, หัวหน้าเว็บ, favicon) คัดลอกมาจาก **NSL Brand Pack** (`D:\NSL Product\NSL-Brand-Pack`) — `apps/nsl-<แอป>/<แอป>_icon_rounded.svg` → `brand/<id>.svg` (id ตรงกับ `AppId` ; Nebula ของ Brand Pack = `nebular`), `nsl-palette` → `palette.svg`, `apps/nsl-palette/palette_windows.ico` → `favicon.ico` (แท็บเบราว์เซอร์ใช้ไอคอน Palette ไม่ใช่โลโก้ NSL ; เบราว์เซอร์ที่รองรับใช้ `palette.svg`)
 อัปเดตไอคอนให้คัดลอกทับไฟล์เหล่านี้ใหม่ ; เทสต์ตรวจว่ามีครบทุกแอปและ SVG ไม่มีสคริปต์/ลิงก์ภายนอก
