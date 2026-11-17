@@ -353,3 +353,69 @@ elevation.strength: 0.0 – 1.5            # คูณความเข้ม�
 - **เฟส 14 — ปุ่มและแผง** : `NslButton`, `NslIconButton`, `NslPanel`, `NslBadge` + เทสต์ (ทุกสถานะ, ทุกธีมในตัว, density × scale, contrast, semantics) + ใส่ใน Gallery
 - **เฟส 15 — ความคืบหน้าและสถานะว่าง** : `NslProgressBar`, `NslEmptyState` + เทสต์ + Gallery + ปรับเวอร์ชัน 1.2.0 / CHANGELOG / README
 - (ภายหลัง ถ้ามีแอปที่สองต้องใช้) `NslSegmented`, `NslKbd`
+
+### 9.9 สองชั้นของ component + ผลสำรวจทั้งห้าแอป (2026-11-17)
+**ที่มา:** ผู้ใช้กำหนดโครงว่า component แบ่งสองชั้น — (1) **ของใช้ร่วม** : component เบื้องต้นไฟล์เดียวใช้ได้ทุก Product (2) **เฉพาะทาง** : custom พิเศษของ Product นั้น ๆ — และให้สำรวจแอปอื่น (Orbit, Lyra, Nebular, Spectrum) ว่าอะไรอยู่ชั้นไหน
+
+**กติกาของสองชั้น**
+| | ชั้น 1 ใช้ร่วม (`nsl_ui`) | ชั้น 2 เฉพาะทาง (อยู่ในแอปของ Product) |
+|---|---|---|
+| หน้าที่ | ชิ้นส่วนพื้นฐานที่ไม่รู้จักโดเมน (ปุ่ม แผง ป้าย แถวรายการ เมนูนำทาง ฯลฯ) | หน้าจอ/ชิ้นส่วนที่ผูกกับข้อมูลและพฤติกรรมของ Product (canvas ตาราง, เครื่องเล่น, กราฟโลก, การเงิน) |
+| ที่อยู่ | `lib/src/components/` ไฟล์ละตัว export จาก `nsl_ui.dart` | โค้ดของแอปเอง (ไม่ย้ายเข้า core) |
+| อ่านค่าจาก | token core (`context.nsl`) เท่านั้น | token core + **ส่วนขยายของ Product** (`nebular`/`spectrum`/`lyra`/`orbit` ผ่าน `tokens.ext(...)`) |
+| ห้าม | import โดเมน/controller/แอปใด ๆ, ฮาร์ดโค้ดสี/มุมโค้ง/ขนาดตัวอักษร (มี guard test) | — (แต่ควรเลิกฮาร์ดโค้ดสีทีละหน้า ตาม ratchet) |
+| เกณฑ์เข้า | **กฎของสอง** : มี ≥ 2 แอปเขียนซ้ำ และตัดโดเมนออกแล้วเหลือโครงเดียวกัน | เริ่มที่นี่เสมอ ; ถ้าแอปที่สองต้องการ → ยกขึ้นชั้น 1 โดยแอปเดิมเปลี่ยนมาใช้ตัวกลาง |
+
+- **เหตุผลที่ชั้น 2 ไม่ย้ายเข้า core:** ชิ้นส่วนเฉพาะทางพึ่ง model/controller ของแอป (เช่น `TableCard`, `SongRow`) ย้ายเข้า core จะทำให้ core ต้องพึ่งโดเมน ซึ่งขัดกับหลัก "core พึ่งแค่ Flutter SDK" ; สิ่งที่ core ให้ชั้น 2 คือ **token ส่วนขยายต่อ Product** (มีแล้ว 3 จาก 4 : `orbit` ยังไม่ได้ทำ) และชั้น 1 ให้ประกอบ
+- **ชั้นที่สาม (ค้นพบ) : ตัวควบคุมของ Material ที่แอปใช้ตรง ๆ** — ไม่ควรห่อเป็น widget ใหม่ แต่ควรแต่งผ่าน **`ThemeData` กลางที่สร้างจาก token** (`nsl_ui` ยังไม่มีตัวสร้างนี้ ; ตอนนี้แต่ละแอปเขียน `buildTheme` เอง)
+
+**หลักฐานการใช้ตัวควบคุม Material ตรง ๆ (นับจาก `lib/` ของแต่ละแอป 2026-11-17)**
+| ตัวควบคุม | Orbit | Lyra | Nebular | Spectrum | Launcher |
+|---|---|---|---|---|---|
+| `Switch` | 22 | 1 | 6 | 4 | 0 (เขียน `_Toggle` เอง) |
+| `Checkbox` | 4 | 1 | 10 | 2 | 0 |
+| `ChoiceChip`/`FilterChip` | 40 | 3 | 2 | 7 | 0 |
+| `SegmentedButton` | 0 | 2 | 7 | 5 | 0 |
+| `Slider` | 7 | 0 | 0 | 7 | 0 |
+| `ListTile` | 65 | 3 | 15 | 10 | 0 |
+| `Tooltip` | 5 | 0 | 14 | 9 | 0 |
+| `showDialog` / `AlertDialog` | 15 / 15 | 13 / 8 | 43 / 24 | 13 / 12 | 1 / 0 |
+| `showModalBottomSheet` | 42 | 0 | 0 | 0 | 0 |
+| ฮาร์ดโค้ด `BorderRadius.circular(<เลข>)` | 115 | 46 | 76 | 90 | 6 |
+| ฮาร์ดโค้ด `fontSize: <เลข>` | 28 | 1 | 199 | 178 | 0 |
+| ฮาร์ดโค้ด `Color(0x…)` | 72 | 75 | 89 | 54 | 78 |
+- Launcher ไม่ใช้ Material controls เลย (ตั้งใจ มี engine ธีมของตัวเอง) จึงอยู่นอกชั้นที่สามและไม่นับเป็นผู้ใช้ `ThemeData` กลาง
+
+**ชั้น 1 — ผลจัดกลุ่ม** (ระดับหลักฐาน : ✔ = อ่านโค้ดเทียบแล้ว ; ○ = ดูจากชื่อ/จำนวนเท่านั้น)
+| component | พบซ้ำที่ไหน | หลักฐาน | สถานะ |
+|---|---|---|---|
+| `NslButton`/`NslIconButton`/`NslPanel`/`NslBadge`/`NslProgressBar`/`NslEmptyState` | Launcher, Orbit, Nebular, Spectrum, Lyra | ✔ | **ทำแล้ว** (เฟส 14–15) |
+| **ThemeData กลางจาก token** (switch, checkbox, chip, segmented, slider, listTile, tooltip, dialog, เมนู, tab, input, scrollbar) | Orbit, Lyra, Nebular, Spectrum (ทั้งสี่เขียน `buildTheme` เอง) | ✔ (จำนวนการใช้) ○ (ตัว builder ของแต่ละแอป) | **เสนอเป็นอันดับ 1** |
+| `NslListRow` (ภาพนำ + ชื่อ + รอง + ท้ายแถว + สถานะเลือก/กำลังใช้) | Spectrum `LibraryRow`/`SongRow` (+`HistoryRow`/`_TrackRow`/`_QueueRow` ○), Orbit `SongTile` ✔ / `_TxRow` ○, Lyra `EntryTile` ○, Nebular `_TableTile` ○ | ✔ 3 ตัว | เสนอ |
+| `NslNavItem` (ไอคอน + ป้าย + เลือกอยู่ + ป้ายตัวเลข + โหมดย่อ) | Spectrum `_NavItem`, Launcher `_NavButton`, Lyra `_NavTab` | ✔ 3 ตัว | เสนอ |
+| `NslColorPicker` (hex + HSL/HSV) | Nebular `_ColorPickerDialog` (208 บรรทัด, แผ่น SV+hue), Orbit `_ColorSheet` (100 บรรทัด, สไลเดอร์ HSV), Launcher (ช่อง hex), core `NslAppearancePanel` (hex + HSL) → **4 ชุด** | ✔ | เสนอ (ใหญ่กว่าตัวอื่น) |
+| `NslSegmented` / ตัวเลือก (radio, ชิปโหมด) | Orbit `Seg` + `_LanguageChoice`, Launcher `_Choice`/`_ModeChip`, Nebular `_Choice` | ✔ | เสนอ — **ทำหลัง ThemeData** (ถ้า `SegmentedButton`/`ChoiceChip` ที่แต่งธีมแล้วพอ ก็ไม่ต้องมี) |
+| ไดอะล็อกถามข้อความ/ยืนยัน (`NslPromptDialog`/`NslConfirmDialog`) | Nebular `TextPromptDialog`/`_RiskyConfirmDialog`, Spectrum `_NameDialog` | ✔ 2 ตัว | เสนอ (ความเสี่ยงต่ำ) |
+| ไดอะล็อกอื่น ๆ (Nebular 24 ตัว ฯลฯ) | — | ○ | **ไม่ทำ** : ธีมผ่าน ThemeData ; เนื้อหาเป็นของแต่ละหน้า |
+| `NslAdaptive` (กว้าง/แคบตามจุดหัก) | Lyra `_Adaptive` (ตรง), Orbit `Adaptive` (เฉพาะกว่า — แบ่งสองคอลัมน์) | ✔ | ทีหลัง (เล็ก) |
+| `NslReleaseNotes` | Nebular `WhatsNewDialog`+`kReleaseNotes`, Orbit `PatchNotesPage`+`Release(major/minor/fixes)`, Launcher `_WhatsNew` (ข้อความล้วน) | ✔ (โมเดลข้อมูลต่างกัน) | ทีหลัง — ต้องรวมโมเดลก่อน |
+| `NslKbd` (ปุ่มลัด) | Spectrum `KeyCap`/`_Kbd` (ซ้ำกันเองในแอปเดียว), Nebular ใช้ข้อความ mono | ✔ | ทีหลัง (แอปเดียว) |
+| แถบเครื่องมือ/ปุ่มซูม | Nebular `_ZoomBar`/`_ToolBar`, Lyra `_ZoomButton`/`_Toolbar` | ✔ | **ไม่ต้องมี component ใหม่** : ประกอบจาก `NslIconButton` + `NslPanel` |
+| ช่องกรอกมีป้าย / ช่องกรอกที่ยืนยันเมื่อออก | Nebular `LabeledField`/`CommitField` | ○ | รอแอปที่สอง |
+
+**ชั้น 2 — เฉพาะทาง (ไม่ย้ายเข้า core)**
+- **Nebular :** canvas ทั้งชุด (`CanvasView`, `TableCard`, `NoteCard`, `GroupCard`, `RelationPainter`, `DotsPainter`, DFD painter/panel), SQL (`SqlDock`, `SqlCodeView`), ไดอะล็อกฐานข้อมูล/ migration/ seed/ export, `IssueCard`/ตรวจปัญหา, `CommandPalette`/`SearchLauncher`, `DiagramTabBar`
+- **Spectrum :** เครื่องเล่น (`ControlsBar`, `SeekRow`, `NslSlider`, `PlayButton`, `MiniPlayer`/PiP, `NowPlayingDock`, `QueuePanel`), มุมมองคลัง/รูป/หนังสือ, `LibraryThumb`/`PathThumb`, หน้าส่วนตัว (PIN), `QuickSettingsPanel`
+- **Lyra :** `EntryContent`, `LinkedParagraph` (ลิงก์ `[[ ]]`), `RelationsSection`/`Backlinks*`, `GraphView`, `TimelineView`, `WorldDashboard`/`_TypeBars`, `EntryEditor`, `TypeGlyph`, ไดอะล็อกซิงก์
+- **Orbit :** การเงิน (กราฟ `DonutPainter`/`BarPainter`/`RingPainter`, งบ, เป้าหมาย), นาฬิกา/ปลุก/จับเวลา (`AlarmKnob`), ปฏิทิน/ตารางเรียน, หนังสือ/เพลง/โน้ต/QR/PDF/อากาศ, `PinScreen`, bottom sheet 42 จุด
+- **Launcher :** `AppCard`, `AppIcon`, หน้ารายละเอียด/หน้าคลัง, `ThemeManager`, `_Stars`
+- **ซ้ำกันแต่เลี่ยง (เสี่ยง/ผูกแพลตฟอร์ม) :** แถบชื่อ/ปุ่มหน้าต่าง (Nebular `WindowControls`/`_CaptionButton`, Spectrum `NslTitleBar`/`_WinBtn`) · ตัวแบ่งแผง (Nebular `PanelSplitter`, Orbit `SplitPane`) · หน้าจอ PIN (Orbit `PinScreen`, Spectrum `_SetPin`/`_Unlock` — ตรรกะความปลอดภัย) · ภาพปก/รูปย่อ (ผูกการโหลดไฟล์) · กราฟ (Orbit painter, Lyra `_TypeBars` — ยังมีแอปหลักแอปเดียว)
+
+**ลำดับเสนอ (ยังไม่เริ่ม — รอผู้ใช้เลือก)**
+1. **เฟส 16 — ThemeData กลางจาก token** (`NslTokens → ThemeData` พร้อม component themes) + เทสต์ parity กับ `buildTheme` ของ Nebular/Spectrum/Lyra แบบอ่านอย่างเดียว (วิธีเดียวกับเฟส 2) : คุ้มสุด เพราะครอบ Switch/Checkbox/Chip/Segmented/Slider/ListTile/Tooltip/Dialog ที่ใช้ตรง ๆ รวมหลายร้อยจุดโดยไม่ต้องแก้ call site
+2. เฟส 17 — `NslListRow`, `NslNavItem`
+3. เฟส 18 — `NslColorPicker`
+4. เฟส 19 — `NslSegmented`/ตัวเลือก (ถ้ายังจำเป็นหลังเฟส 16), `NslPromptDialog`/`NslConfirmDialog`
+5. ทีหลัง — `NslAdaptive`, `NslReleaseNotes`, `NslKbd`
+- ทุกเฟสยังคง : เพิ่มอย่างเดียว · ไม่แตะแอปจริง/สำเนาโดยไม่ได้รับอนุญาต · ไม่เพิ่ม dependency · Launcher ไม่เกี่ยวข้อง
+- **งานค้างด้านโทเค็นของชั้น 2 :** ส่วนขยาย `orbit` ยังไม่มีใน core (Orbit ยังไม่ได้ย้าย — เฟส 11)
