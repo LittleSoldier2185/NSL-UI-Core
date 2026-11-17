@@ -518,7 +518,7 @@ onMounted(async () => {
           <label class="chk"><input v-model="ed.showAllExt.value" type="checkbox" /> {{ t('showOtherExt') }}</label>
           <p v-if="ed.visibleExtensions.value.length === 0" class="small">{{ t('extOrbit') }}</p>
           <fieldset v-for="e in ed.visibleExtensions.value" :key="e.name" class="grp card">
-            <legend>{{ e.app }} · <code>{{ e.name }}</code> · core ≥ {{ e.since }}</legend>
+            <legend>{{ extAppName(e.name) }} · <code>{{ e.name }}</code> · core ≥ {{ e.since }}</legend>
             <ColorRow
               v-for="k in e.keys"
               :key="`${editMode}-${e.name}-${k}`"

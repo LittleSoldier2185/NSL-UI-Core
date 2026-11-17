@@ -596,3 +596,45 @@ describe('แถบเลื่อนของพรีวิวแยกจา�
     expect(narrow).toContain('overflow: visible');
   });
 });
+
+describe('สีเฉพาะแอป : ครบในพรีวิวของแอปนั้น + ชี้แล้วเน้น', () => {
+  const tabs = () => wrapper.findAll('.ptabs button');
+  const rowOf = (key: string) => wrapper.findAll('.row').find((r) => r.find(`input[aria-label="${key} hex"]`).exists())!;
+
+  it('พรีวิวของแต่ละแอปแสดงสีเฉพาะแอปของตัวเองครบทุกคีย์ (เช่น Lyra : accentDark, chipText)', async () => {
+    const { tokenElements } = await import('../src/previewMap');
+    const { schema } = await import('../src/core/tokens');
+    for (const e of schema.extensions) {
+      const i = tabs().findIndex((b) => b.text().toLowerCase() === e.name);
+      expect(i, e.name).toBeGreaterThanOrEqual(0);
+      await tabs()[i]!.trigger('click');
+      const shown = new Set(tokenElements(wrapper.get('section.pv').element).keys());
+      expect(e.keys.filter((k) => !shown.has(`${e.name}.${k}`)), e.name).toEqual([]);
+    }
+  });
+
+  it('ชี้แถวสีเฉพาะแอป → ส่วนที่ใช้สีนั้นในพรีวิวของแอปถูกเน้น', async () => {
+    await tabs()[2]!.trigger('click'); // Lyra
+    await go('ext');
+    await flushPromises();
+    const peeked = () => wrapper.findAll('.pv-peek').length;
+    // ชิปที่เลือกอยู่ใช้สีอื่น → ต้องไม่ถูกเน้นตอนชี้ chipText
+    await rowOf('chipText').trigger('mouseenter');
+    expect(wrapper.findAll('.fchip.on.pv-peek').length).toBe(0);
+    expect(wrapper.findAll('.fchip.pv-peek').length).toBeGreaterThan(0);
+    await rowOf('chipText').trigger('mouseleave');
+    for (const key of ['chipText', 'accentDark', 'summary']) {
+      await rowOf(key).trigger('mouseenter');
+      expect(peeked(), key).toBeGreaterThan(0);
+      await rowOf(key).trigger('mouseleave');
+      expect(peeked(), key).toBe(0);
+    }
+  });
+
+  it('หัวกลุ่มสีเฉพาะแอปใช้ชื่อแอปสั้น (ไม่ใช่ชื่อเก่า)', async () => {
+    await go('ext');
+    const legends = wrapper.findAll('fieldset.grp legend').map((l) => l.text());
+    expect(legends.some((l) => l.startsWith('Lyra ·'))).toBe(true);
+    expect(legends.join(' ')).not.toContain('Writer Tools');
+  });
+});

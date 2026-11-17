@@ -10,9 +10,12 @@ const entries = computed(() => mockText.value.lyra.entries.map((e, i) => ({ ...e
 
 <template>
   <div class="ap-lyra">
-    <div class="bar"><strong>{{ mockText.lyra.world }}</strong><span class="sp"></span><span class="pill">{{ mockText.lyra.newEntry }}</span></div>
+    <div class="bar"><strong>{{ mockText.lyra.world }}</strong><span class="sp"></span><span class="pill hovered" :title="mockText.lyra.hoverNote">{{ mockText.lyra.newEntry }}</span></div>
     <div class="body">
       <nav class="list">
+        <div class="chips">
+          <span v-for="(c, i) in mockText.lyra.filters" :key="c" class="fchip" :class="{ on: i === 0 }">{{ c }}</span>
+        </div>
         <div v-for="(e, i) in entries" :key="e.name" class="row" :class="{ on: e.on, hover: i === 2 }">
           <span class="glyph" :class="`t-${e.type}`">{{ e.glyph }}</span>
           <span class="nm">{{ e.name }}</span>
@@ -56,6 +59,30 @@ const entries = computed(() => mockText.value.lyra.entries.map((e, i) => ({ ...e
 }
 .sp {
   flex: 1;
+}
+.pill.hovered {
+  background: var(--e-lyra-accentDark);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: var(--pad);
+}
+.fchip {
+  font-size: var(--fs-sm);
+  padding: 1px 8px;
+  border-radius: var(--r-pill);
+}
+/* แยกกฎของชิปที่ไม่ได้เลือก : ตัวชี้ตำแหน่งในพรีวิวอ่านจาก selector จึงต้องไม่ครอบชิปที่เลือก (ซึ่งใช้สีอื่น) */
+.fchip:not(.on) {
+  border: 1px solid var(--c-borderStrong);
+  color: var(--e-lyra-chipText);
+}
+.fchip.on {
+  background: var(--c-text);
+  border-color: var(--c-text);
+  color: var(--c-bg);
 }
 .pill {
   background: var(--c-accent);

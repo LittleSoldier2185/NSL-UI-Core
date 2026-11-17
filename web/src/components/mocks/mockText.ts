@@ -36,6 +36,8 @@ const text = {
     lyra: {
       world: 'โลกของฉัน',
       newEntry: '+ รายการใหม่',
+      hoverNote: 'แสดงตอนเมาส์ชี้',
+      filters: ['ทั้งหมด', 'ตัวละคร', 'สถานที่', 'องค์กร'],
       entries: [
         { glyph: 'ค', type: 'Character', name: 'ไลรา วาเลน', status: 'Canon' },
         { glyph: 'ส', type: 'Place', name: 'หมู่เกาะเงาจันทร์', status: 'Draft' },
@@ -91,6 +93,8 @@ const text = {
     lyra: {
       world: 'My world',
       newEntry: '+ New entry',
+      hoverNote: 'Shown while hovered',
+      filters: ['All', 'Characters', 'Places', 'Orgs'],
       entries: [
         { glyph: 'C', type: 'Character', name: 'Lyra Valen', status: 'Canon' },
         { glyph: 'P', type: 'Place', name: 'Moonshadow Isles', status: 'Draft' },
