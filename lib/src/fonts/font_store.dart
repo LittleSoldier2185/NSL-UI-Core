@@ -140,6 +140,8 @@ class NslFontStore {
     for (final f in s.fonts.where((f) => f.family == family)) {
       any = await _deleteFile(f.fileName) || any;
     }
+    // ออกจากรายการ/การจัดลำดับทันที (ตัวฟอนต์ที่ลงทะเบียนกับเอนจินไปแล้วยังค้างจนปิดแอป)
+    if (any) _infos.remove(family);
     return any;
   }
 

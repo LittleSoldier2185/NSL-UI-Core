@@ -178,6 +178,7 @@ void main() {
       await s.importFont(fakeFont(ranges: _latin, name: 'Drop'));
       expect(await s.remove('Drop'), isTrue);
       expect((await s.list()).map((f) => f.family), ['Keep']);
+      expect(s.infos.keys, ['Keep']); // a removed font no longer counts in the plan/list
       expect(await s.remove('Nope'), isFalse);
       expect(await s.remove('../../etc/passwd'), isFalse);
     });
