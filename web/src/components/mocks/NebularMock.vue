@@ -88,13 +88,14 @@ const headInk = computed(() => toHex(onAccentFor(props.tokens.extensions.nebular
 }
 /* ตำแหน่งตาราง/แถวตายตัว (px) เพื่อให้ปลายเส้นตรงแถว : หัว 28 + แถว 26 + เส้นขอบ 1
    users.id กลางแถว = 14 + 1 + 28 + 13 = 56 ; orders.user_id = 40 + 1 + 28 + 26 + 13 = 108 */
+/* svg เป็น replaced element : left+right อย่างเดียวไม่ยืด (width:auto = ตามสัดส่วน viewBox) จึงต้องกำหนดกว้างเอง
+   = ผืนผ้าใบ − (ขอบขวาของ users 136) − (ขอบซ้ายของ orders 136) */
 .links {
   position: absolute;
   top: 0;
   left: 136px;
-  right: 136px;
+  width: calc(100% - 272px);
   height: 190px;
-  width: auto;
   overflow: visible;
 }
 .end {

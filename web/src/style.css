@@ -467,7 +467,8 @@ select:focus-visible,
 /* ธีมฐาน */
 .bases {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  /* 5 ธีมในตัวต้องอยู่แถวเดียวที่ความกว้างปกติ (ไม่แตก 4+1) */
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
   gap: 8px;
   margin-top: 12px;
 }

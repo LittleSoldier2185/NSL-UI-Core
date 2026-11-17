@@ -147,7 +147,7 @@ function stepSub(s: Step): string {
     case 'colors':
       return t('sub_colors', { n: schema.colors.length, m: ownCount.value });
     case 'ext':
-      return ed.visibleExtensions.value.length > 0 ? ed.visibleExtensions.value.map((e) => e.app).join(' · ') : t('sub_extNone');
+      return ed.visibleExtensions.value.length > 0 ? ed.visibleExtensions.value.map((e) => extAppName(e.name)).join(' · ') : t('sub_extNone');
     case 'shape':
       return t('sub_shape');
     case 'style':

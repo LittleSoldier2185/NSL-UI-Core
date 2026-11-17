@@ -519,7 +519,9 @@ describe('พรีวิวตามภาษาของหน้าเว็�
     expect(Number(d[2])).toBe(ordersFk);
     // เส้นวาดเฉพาะช่องว่างระหว่างตาราง : ซ้าย = ขอบขวาของ users, ขวา = ขอบซ้ายของ orders
     expect(px(/\.links \{[^}]*?left: (\d+)px/)).toBe(t1Left + width);
-    expect(px(/\.links \{[^}]*?right: (\d+)px/)).toBe(t2Right + width);
+    // svg ไม่ยืดด้วย left+right (replaced element → width:auto ใช้สัดส่วน viewBox) : ต้องกำหนดกว้าง = 100% − ช่องของสองตาราง
+    expect(px(/\.links \{[^}]*?width: calc\(100% - (\d+)px\)/)).toBe(t1Left + width + t2Right + width);
+    expect(/\.links \{[^}]*?width: auto/.test(src)).toBe(false);
     expect(src).toContain('vector-effect="non-scaling-stroke"');
   });
 });
