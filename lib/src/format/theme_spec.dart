@@ -36,6 +36,9 @@ class NslThemeSpec {
     this.family,
     this.content,
     this.mono,
+    this.familyThai,
+    this.contentThai,
+    this.monoThai,
     this.minSize,
     this.scale,
     this.density,
@@ -71,6 +74,9 @@ class NslThemeSpec {
   /// ฟอนต์สามบทบาท: `family` = UI, `content` = เนื้อหา/อ่านยาว (เช่น serif), `mono`
   final String? family, content, mono;
 
+  /// ฟอนต์ของอักษรไทยแยกตามบทบาท (core 1.2) — `family/content/mono` คือฟอนต์หลัก/ละติน ; null = ไม่แยก (ใช้ฟอนต์สำรองเดิม)
+  final String? familyThai, contentThai, monoThai;
+
   /// ขนาดตัวอักษรขั้นต่ำของ UI (หลังคูณ scale)
   final double? minSize;
   final double? scale;
@@ -99,6 +105,9 @@ class NslThemeSpec {
         family: family,
         content: content,
         mono: mono,
+        familyThai: familyThai,
+        contentThai: contentThai,
+        monoThai: monoThai,
         minSize: minSize,
         scale: scale,
         density: density,
@@ -122,6 +131,9 @@ class NslThemeSpec {
         family: family,
         content: content,
         mono: mono,
+        familyThai: familyThai,
+        contentThai: contentThai,
+        monoThai: monoThai,
         minSize: minSize,
         scale: scale,
         density: density,

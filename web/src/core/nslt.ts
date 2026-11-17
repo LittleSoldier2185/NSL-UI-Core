@@ -112,6 +112,9 @@ function parseInner(source: string): ParseResult {
   let family: string | undefined;
   let content: string | undefined;
   let mono: string | undefined;
+  let familyThai: string | undefined;
+  let contentThai: string | undefined;
+  let monoThai: string | undefined;
   let scale: number | undefined;
   let minSize: number | undefined;
   if (isObj(root.type)) {
@@ -119,6 +122,9 @@ function parseInner(source: string): ParseResult {
     family = fontName(t.family, 'type.family', warnings);
     content = fontName(t.content, 'type.content', warnings);
     mono = fontName(t.mono, 'type.mono', warnings);
+    familyThai = fontName(t.familyThai, 'type.familyThai', warnings);
+    contentThai = fontName(t.contentThai, 'type.contentThai', warnings);
+    monoThai = fontName(t.monoThai, 'type.monoThai', warnings);
     if ('minSize' in t) {
       const n = num(t.minSize);
       if (n === undefined) warnings.push('type.minSize is not a finite number — ignored');
@@ -176,6 +182,9 @@ function parseInner(source: string): ParseResult {
   if (family !== undefined) spec.family = family;
   if (content !== undefined) spec.content = content;
   if (mono !== undefined) spec.mono = mono;
+  if (familyThai !== undefined) spec.familyThai = familyThai;
+  if (contentThai !== undefined) spec.contentThai = contentThai;
+  if (monoThai !== undefined) spec.monoThai = monoThai;
   if (minSize !== undefined) spec.minSize = minSize;
   if (scale !== undefined) spec.scale = scale;
   if (density !== undefined) spec.density = density;
@@ -289,6 +298,9 @@ export function serializeNslt(s: ThemeSpec): string {
   if (s.family !== undefined) type.family = s.family;
   if (s.content !== undefined) type.content = s.content;
   if (s.mono !== undefined) type.mono = s.mono;
+  if (s.familyThai !== undefined) type.familyThai = s.familyThai;
+  if (s.contentThai !== undefined) type.contentThai = s.contentThai;
+  if (s.monoThai !== undefined) type.monoThai = s.monoThai;
   if (s.minSize !== undefined) type.minSize = s.minSize;
   if (s.scale !== undefined) type.scale = s.scale;
   if (Object.keys(type).length > 0) out.type = type;

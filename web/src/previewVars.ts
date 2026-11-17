@@ -28,8 +28,9 @@ export function cssVars(tk: NslTokens): Record<string, string> {
   const sh = tk.elevation;
   v['--shadow'] = sh.mode === 'flat' ? 'none' : `0 ${2 * sh.strength}px ${12 * sh.strength}px ${toHex({ ...tk.colors.shadow!, a: Math.min(1, 0.18 * sh.strength) })}`;
   v['--flat-border'] = sh.mode === 'flat' ? `1px solid ${toHex(tk.colors.border!)}` : '1px solid transparent';
-  if (tk.type.family) v['--ff'] = `"${tk.type.family}", "Noto Sans Thai", system-ui, sans-serif`;
-  if (tk.type.mono) v['--ff-mono'] = `"${tk.type.mono}", ui-monospace, monospace`;
-  if (tk.type.content) v['--ff-content'] = `"${tk.type.content}", "Noto Serif Thai", Georgia, serif`;
+  const names = (...f: (string | undefined)[]) => f.filter((x): x is string => !!x).map((x) => `"${x}"`);
+  if (tk.type.family || tk.type.familyThai) v['--ff'] = [...names(tk.type.family, tk.type.familyThai, 'Noto Sans Thai'), 'system-ui', 'sans-serif'].join(', ');
+  if (tk.type.mono || tk.type.monoThai) v['--ff-mono'] = [...names(tk.type.mono, tk.type.monoThai), 'ui-monospace', 'monospace'].join(', ');
+  if (tk.type.content || tk.type.contentThai) v['--ff-content'] = [...names(tk.type.content, tk.type.contentThai, 'Noto Serif Thai'), 'Georgia', 'serif'].join(', ');
   return v;
 }

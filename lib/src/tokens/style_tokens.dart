@@ -61,14 +61,31 @@ class NslShape {
 ///
 /// ธีมระบุได้แค่ "ชื่อ family" — แอปเป็นผู้จัดหาไฟล์ฟอนต์จริงเอง (nsl_ui ฝังเฉพาะ Noto Sans Thai)
 class NslType {
-  const NslType({this.family, this.content, this.mono, this.scale = 1.0, this.minSize});
+  const NslType({
+    this.family,
+    this.content,
+    this.mono,
+    this.familyThai,
+    this.contentThai,
+    this.monoThai,
+    this.thaiFirst = const {},
+    this.scale = 1.0,
+    this.minSize,
+  });
 
-  /// ฟอนต์ UI ; null = ใช้ Noto Sans Thai ของ nsl_ui
+  /// ฟอนต์ UI (ละติน/หลัก) ; null = ใช้ Noto Sans Thai ของ nsl_ui
   final String? family;
 
   /// ฟอนต์เนื้อหา/อ่านยาว (เช่น serif ของแอปเขียนนิยาย) ; null = ใช้ฟอนต์ UI
   final String? content;
   final String? mono;
+
+  /// ฟอนต์ของอักษรไทยแยกตามบทบาท (core 1.2) ; null = ไม่แยก (อักษรไทยตกไปที่ฟอนต์สำรองเดิมที่ลงท้ายด้วย Noto Sans Thai)
+  final String? familyThai, contentThai, monoThai;
+
+  /// บทบาท (`family`/`content`/`mono`) ที่ต้องวางฟอนต์ไทยไว้ก่อน — ค่าจากการตรวจ cmap ตอนรัน (ดู `planFontOrder`) ไม่เขียนลงไฟล์ธีม
+  /// ใช้เมื่อฟอนต์ละตินมีอักษรไทยด้วยแต่ฟอนต์ไทยไม่มีอักษรละติน : วางฟอนต์ไทยก่อน อักษรไทยจึงได้ฟอนต์ไทย ส่วนละตินตกลงมาที่ฟอนต์ละติน
+  final Set<String> thaiFirst;
   final double scale;
 
   /// ขนาดตัวอักษรขั้นต่ำของ UI (หลังคูณ [scale]) ; null = ไม่มีขั้นต่ำ
@@ -77,14 +94,31 @@ class NslType {
   static const double minScale = 0.9, maxScale = 1.2;
   static const double minMinSize = 8, maxMinSize = 16;
 
+  String _primary(String role, String? latin, String? thai) {
+    final l = latin ?? (role == 'family' ? kNslThaiFont : null);
+    if (thai != null && thaiFirst.contains(role)) return thai;
+    return l ?? kNslThaiFont;
+  }
+
+  List<String> _chain(String primary, String? latin, String? thai) {
+    final out = <String>[];
+    for (final f in [latin, thai, ...kNslFontFallback]) {
+      if (f != null && f != primary && !out.contains(f)) out.add(f);
+    }
+    return out;
+  }
+
   /// ฟอนต์หลักที่ใช้จริง
-  String get effectiveFamily => family ?? kNslThaiFont;
+  String get effectiveFamily => _primary('family', family, familyThai);
 
   /// ฟอนต์เนื้อหาที่ใช้จริง (ไม่ระบุ = ฟอนต์ UI)
-  String get effectiveContent => content ?? effectiveFamily;
+  String get effectiveContent => content == null && contentThai == null ? effectiveFamily : _primary('content', content ?? family, contentThai);
 
-  /// ลำดับฟอนต์สำรอง (ไม่ซ้ำกับฟอนต์หลัก และปิดท้ายด้วย Noto Sans Thai เสมอ)
-  List<String> get fallback => [for (final f in kNslFontFallback) if (f != effectiveFamily) f];
+  /// ลำดับฟอนต์สำรองของฟอนต์ UI (ไม่ซ้ำกับฟอนต์หลัก ; ฟอนต์ไทย/ละตินอีกช่องมาก่อน แล้วปิดท้ายด้วย Noto Sans Thai เสมอ)
+  List<String> get fallback => _chain(effectiveFamily, family, familyThai);
+
+  /// ลำดับฟอนต์สำรองของฟอนต์เนื้อหา
+  List<String> get contentFallback => content == null && contentThai == null ? fallback : _chain(effectiveContent, content ?? family, contentThai);
 
   /// ขนาดที่ใช้จริงของขนาดฐาน [base] : คูณ [scale] แล้วไม่ต่ำกว่า [minSize]
   double fit(double base) {
@@ -93,10 +127,25 @@ class NslType {
     return m != null && v < m ? m : v;
   }
 
-  NslType copyWith({String? family, String? content, String? mono, double? scale, double? minSize}) => NslType(
+  NslType copyWith({
+    String? family,
+    String? content,
+    String? mono,
+    String? familyThai,
+    String? contentThai,
+    String? monoThai,
+    Set<String>? thaiFirst,
+    double? scale,
+    double? minSize,
+  }) =>
+      NslType(
         family: family ?? this.family,
         content: content ?? this.content,
         mono: mono ?? this.mono,
+        familyThai: familyThai ?? this.familyThai,
+        contentThai: contentThai ?? this.contentThai,
+        monoThai: monoThai ?? this.monoThai,
+        thaiFirst: thaiFirst ?? this.thaiFirst,
         scale: scale ?? this.scale,
         minSize: minSize ?? this.minSize,
       );
@@ -107,12 +156,18 @@ class NslType {
       family == other.family &&
       content == other.content &&
       mono == other.mono &&
+      familyThai == other.familyThai &&
+      contentThai == other.contentThai &&
+      monoThai == other.monoThai &&
+      _setEq(thaiFirst, other.thaiFirst) &&
       scale == other.scale &&
       minSize == other.minSize;
 
   @override
-  int get hashCode => Object.hash(family, content, mono, scale, minSize);
+  int get hashCode => Object.hash(family, content, mono, familyThai, contentThai, monoThai, Object.hashAllUnordered(thaiFirst), scale, minSize);
 }
+
+bool _setEq(Set<String> a, Set<String> b) => a.length == b.length && a.containsAll(b);
 
 /// ความหนาแน่นของ UI (มีผลกับ widget ของ nsl_ui และ Material controls เท่านั้น ไม่รวมแคนวาส)
 enum NslDensity {

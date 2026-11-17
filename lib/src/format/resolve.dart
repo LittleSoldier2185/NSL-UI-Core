@@ -54,7 +54,7 @@ NslTokens resolveTokens(NslThemeSpec spec, Brightness brightness, {NslThemeLooku
   final colors = <String, Color>{};
   final exts = <String, Map<String, Color>>{};
   final radius = <String, double>{};
-  String? family, content, mono;
+  String? family, content, mono, familyThai, contentThai, monoThai;
   double? scale, strength, minSize;
   NslDensity? density;
   NslElevationMode? mode;
@@ -81,6 +81,9 @@ NslTokens resolveTokens(NslThemeSpec spec, Brightness brightness, {NslThemeLooku
     content = s.content ?? content;
     minSize = s.minSize ?? minSize;
     mono = s.mono ?? mono;
+    familyThai = s.familyThai ?? familyThai;
+    contentThai = s.contentThai ?? contentThai;
+    monoThai = s.monoThai ?? monoThai;
     scale = s.scale ?? scale;
     density = s.density ?? density;
     mode = s.elevationMode ?? mode;
@@ -128,7 +131,7 @@ NslTokens resolveTokens(NslThemeSpec spec, Brightness brightness, {NslThemeLooku
     brightness: brightness,
     colors: core,
     shape: const NslShape().withValues(radius),
-    type: NslType(family: family, content: content, mono: mono, scale: scale ?? 1.0, minSize: minSize),
+    type: NslType(family: family, content: content, mono: mono, familyThai: familyThai, contentThai: contentThai, monoThai: monoThai, scale: scale ?? 1.0, minSize: minSize),
     density: density ?? NslDensity.normal,
     elevation: NslElevation(mode: mode ?? NslElevationMode.shadow, strength: strength ?? 1.0),
     extensions: outExt,

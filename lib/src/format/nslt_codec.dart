@@ -119,13 +119,16 @@ NsltParseResult _parse(String source) {
   }
 
   // type
-  String? family, content, mono;
+  String? family, content, mono, familyThai, contentThai, monoThai;
   double? scale, minSize;
   final type = root['type'];
   if (type is Map<String, Object?>) {
     family = _fontName(type['family'], 'type.family', warnings);
     content = _fontName(type['content'], 'type.content', warnings);
     mono = _fontName(type['mono'], 'type.mono', warnings);
+    familyThai = _fontName(type['familyThai'], 'type.familyThai', warnings);
+    contentThai = _fontName(type['contentThai'], 'type.contentThai', warnings);
+    monoThai = _fontName(type['monoThai'], 'type.monoThai', warnings);
     if (type.containsKey('minSize')) {
       final v = _num(type['minSize']);
       if (v == null) {
@@ -197,6 +200,9 @@ NsltParseResult _parse(String source) {
       family: family,
       content: content,
       mono: mono,
+      familyThai: familyThai,
+      contentThai: contentThai,
+      monoThai: monoThai,
       minSize: minSize,
       scale: scale,
       density: density,
@@ -343,6 +349,9 @@ String serializeNslt(NslThemeSpec s) {
     if (s.family != null) 'family': s.family,
     if (s.content != null) 'content': s.content,
     if (s.mono != null) 'mono': s.mono,
+    if (s.familyThai != null) 'familyThai': s.familyThai,
+    if (s.contentThai != null) 'contentThai': s.contentThai,
+    if (s.monoThai != null) 'monoThai': s.monoThai,
     if (s.minSize != null) 'minSize': _jsonNum(s.minSize!),
     if (s.scale != null) 'scale': _jsonNum(s.scale!),
   };

@@ -60,6 +60,9 @@ export function resolveTokens(spec: ThemeSpec, brightness: Brightness, lookup: T
   let family: string | undefined;
   let content: string | undefined;
   let mono: string | undefined;
+  let familyThai: string | undefined;
+  let contentThai: string | undefined;
+  let monoThai: string | undefined;
   let scale: number | undefined;
   let strength: number | undefined;
   let minSize: number | undefined;
@@ -84,6 +87,9 @@ export function resolveTokens(spec: ThemeSpec, brightness: Brightness, lookup: T
     content = s.content ?? content;
     minSize = s.minSize ?? minSize;
     mono = s.mono ?? mono;
+    familyThai = s.familyThai ?? familyThai;
+    contentThai = s.contentThai ?? contentThai;
+    monoThai = s.monoThai ?? monoThai;
     scale = s.scale ?? scale;
     density = s.density ?? density;
     mode = s.elevationMode ?? mode;
@@ -123,6 +129,9 @@ export function resolveTokens(spec: ThemeSpec, brightness: Brightness, lookup: T
       ...(family !== undefined ? { family } : {}),
       ...(content !== undefined ? { content } : {}),
       ...(mono !== undefined ? { mono } : {}),
+      ...(familyThai !== undefined ? { familyThai } : {}),
+      ...(contentThai !== undefined ? { contentThai } : {}),
+      ...(monoThai !== undefined ? { monoThai } : {}),
       scale: scale ?? 1,
       ...(minSize !== undefined ? { minSize } : {}),
     },

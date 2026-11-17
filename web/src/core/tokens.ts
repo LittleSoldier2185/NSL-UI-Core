@@ -56,6 +56,9 @@ export interface NslType {
   family?: string;
   content?: string;
   mono?: string;
+  familyThai?: string;
+  contentThai?: string;
+  monoThai?: string;
   scale: number;
   minSize?: number;
 }

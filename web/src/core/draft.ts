@@ -20,6 +20,9 @@ export interface Draft {
   family?: string;
   content?: string;
   mono?: string;
+  familyThai?: string;
+  contentThai?: string;
+  monoThai?: string;
   density?: Density;
   elevationMode?: ElevationMode;
   elevationStrength?: number;
@@ -48,6 +51,9 @@ export function draftFromSpec(s: ThemeSpec): Draft {
   if (s.family !== undefined) d.family = s.family;
   if (s.content !== undefined) d.content = s.content;
   if (s.mono !== undefined) d.mono = s.mono;
+  if (s.familyThai !== undefined) d.familyThai = s.familyThai;
+  if (s.contentThai !== undefined) d.contentThai = s.contentThai;
+  if (s.monoThai !== undefined) d.monoThai = s.monoThai;
   if (s.density !== undefined) d.density = s.density;
   if (s.elevationMode !== undefined) d.elevationMode = s.elevationMode;
   if (s.elevationStrength !== undefined) d.elevationStrength = s.elevationStrength;
@@ -82,6 +88,9 @@ export function draftToSpec(d: Draft): ThemeSpec {
   if (d.family !== undefined) spec.family = d.family;
   if (d.content !== undefined) spec.content = d.content;
   if (d.mono !== undefined) spec.mono = d.mono;
+  if (d.familyThai !== undefined) spec.familyThai = d.familyThai;
+  if (d.contentThai !== undefined) spec.contentThai = d.contentThai;
+  if (d.monoThai !== undefined) spec.monoThai = d.monoThai;
   if (d.minSize !== undefined) spec.minSize = d.minSize;
   if (d.scale !== undefined) spec.scale = d.scale;
   if (d.density !== undefined) spec.density = d.density;

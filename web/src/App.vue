@@ -168,7 +168,7 @@ function num(e: Event): number | null {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
-function setText(field: 'family' | 'content' | 'mono', e: Event) {
+function setText(field: 'family' | 'content' | 'mono' | 'familyThai' | 'contentThai' | 'monoThai', e: Event) {
   const v = (e.target as HTMLInputElement).value.trim();
   if (v === '') delete draft[field];
   else draft[field] = v;
@@ -623,6 +623,9 @@ onMounted(async () => {
             <label class="f">{{ t('fontFamily') }}<input type="text" maxlength="64" :value="draft.family ?? ''" placeholder="Noto Sans Thai" @input="(e) => setText('family', e)" /></label>
             <label class="f">{{ t('fontContent') }}<input type="text" maxlength="64" :value="draft.content ?? ''" @input="(e) => setText('content', e)" /></label>
             <label class="f">{{ t('fontMono') }}<input type="text" maxlength="64" :value="draft.mono ?? ''" @input="(e) => setText('mono', e)" /></label>
+            <label class="f">{{ t('fontFamilyThai') }}<input type="text" maxlength="64" :value="draft.familyThai ?? ''" @input="(e) => setText('familyThai', e)" /></label>
+            <label class="f">{{ t('fontContentThai') }}<input type="text" maxlength="64" :value="draft.contentThai ?? ''" @input="(e) => setText('contentThai', e)" /></label>
+            <label class="f">{{ t('fontMonoThai') }}<input type="text" maxlength="64" :value="draft.monoThai ?? ''" @input="(e) => setText('monoThai', e)" /></label>
             <p class="small">{{ t('fontHint') }}</p>
             <label class="num">
               <span>{{ t('scale') }} ({{ (draft.scale ?? schema.type.scale.default).toFixed(2) }})</span>

@@ -101,6 +101,7 @@ Map<String, Object?> buildTokensSchema() {
     },
     'type': {
       'roles': ['family', 'content', 'mono'],
+      'thaiRoles': ['familyThai', 'contentThai', 'monoThai'],
       'scale': {'min': NslType.minScale, 'max': NslType.maxScale, 'default': 1.0},
       'minSize': {'min': NslType.minMinSize, 'max': NslType.maxMinSize},
       'fontNameMaxLength': 64,

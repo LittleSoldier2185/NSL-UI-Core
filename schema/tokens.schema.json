@@ -307,6 +307,11 @@
       "content",
       "mono"
     ],
+    "thaiRoles": [
+      "familyThai",
+      "contentThai",
+      "monoThai"
+    ],
     "scale": {
       "min": 0.9,
       "max": 1.2,

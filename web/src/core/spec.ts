@@ -28,6 +28,10 @@ export interface ThemeSpec {
   family?: string;
   content?: string;
   mono?: string;
+  /** ฟอนต์ของอักษรไทยแยกตามบทบาท (core 1.2) ; family/content/mono = ฟอนต์หลัก/ละติน */
+  familyThai?: string;
+  contentThai?: string;
+  monoThai?: string;
   minSize?: number;
   scale?: number;
   density?: Density;
