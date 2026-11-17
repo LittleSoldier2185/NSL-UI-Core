@@ -4,6 +4,8 @@ import '../components/nsl_badge.dart';
 import '../components/nsl_button.dart';
 import '../components/nsl_empty_state.dart';
 import '../components/nsl_icon_button.dart';
+import '../components/nsl_list_row.dart';
+import '../components/nsl_nav_item.dart';
 import '../components/nsl_panel.dart';
 import '../components/nsl_progress_bar.dart';
 import '../contrast/contrast.dart';
@@ -91,6 +93,28 @@ class _Components extends StatelessWidget {
         SizedBox(width: 240, child: NslProgressBar(value: 0.6, label: 'Nsl progress ${tone.name}', tone: tone)),
         SizedBox(height: gap),
       ],
+      NslPanel(
+        child: Column(children: [
+          NslListRow(title: 'Nsl list row', subtitle: 'subtitle', leading: const Icon(Icons.music_note), trailing: const Icon(Icons.more_vert), onTap: noop),
+          NslListRow(title: 'Nsl list row selected', subtitle: 'selected', selected: true, onTap: noop),
+          NslListRow(title: 'Nsl list row active', subtitle: 'active', active: true, onTap: noop),
+        ]),
+      ),
+      SizedBox(height: gap),
+      SizedBox(
+        width: 220,
+        child: Column(children: [
+          NslNavItem(icon: Icons.home, label: 'Nsl nav selected', selected: true, badge: 3, onTap: noop),
+          NslNavItem(icon: Icons.search, label: 'Nsl nav', selected: false, onTap: noop),
+        ]),
+      ),
+      SizedBox(height: gap),
+      Row(children: [
+        NslNavItem(icon: Icons.home, label: 'Nsl nav collapsed', selected: true, collapsed: true, onTap: noop),
+        SizedBox(width: gap),
+        NslNavItem(icon: Icons.inbox, label: 'Nsl nav collapsed badge', selected: false, collapsed: true, badge: 9, onTap: noop),
+      ]),
+      SizedBox(height: gap),
       // ความสูงจำกัด : Gallery เองเลื่อนอยู่แล้ว และ NslEmptyState เลื่อนได้ในตัว (ห้ามซ้อนเลื่อนในพื้นที่สูงไม่จำกัด)
       NslPanel(
         tone: NslPanelTone.sunken,

@@ -20,6 +20,8 @@ export 'src/components/nsl_badge.dart';
 export 'src/components/nsl_button.dart';
 export 'src/components/nsl_empty_state.dart';
 export 'src/components/nsl_icon_button.dart';
+export 'src/components/nsl_list_row.dart';
+export 'src/components/nsl_nav_item.dart';
 export 'src/components/nsl_panel.dart';
 export 'src/components/nsl_progress_bar.dart';
 export 'src/theme/adjust.dart';

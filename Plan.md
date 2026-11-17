@@ -413,7 +413,7 @@ elevation.strength: 0.0 – 1.5            # คูณความเข้ม�
 
 **ลำดับเสนอ (ยังไม่เริ่ม — รอผู้ใช้เลือก)**
 1. **เฟส 16 — ThemeData กลางจาก token — ทำแล้ว 2026-11-17** (`NslTokens → ThemeData` พร้อม component themes) + เทสต์ parity กับ `buildTheme` ของ Nebular/Spectrum/Lyra แบบอ่านอย่างเดียว (วิธีเดียวกับเฟส 2) : คุ้มสุด เพราะครอบ Switch/Checkbox/Chip/Segmented/Slider/ListTile/Tooltip/Dialog ที่ใช้ตรง ๆ รวมหลายร้อยจุดโดยไม่ต้องแก้ call site
-2. เฟส 17 — `NslListRow`, `NslNavItem`
+2. เฟส 17 — `NslListRow`, `NslNavItem` — ทำแล้ว 2026-11-17
 3. เฟส 18 — `NslColorPicker`
 4. เฟส 19 — `NslSegmented`/ตัวเลือก (ถ้ายังจำเป็นหลังเฟส 16), `NslPromptDialog`/`NslConfirmDialog`
 5. ทีหลัง — `NslAdaptive`, `NslReleaseNotes`, `NslKbd`
