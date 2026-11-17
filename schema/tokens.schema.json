@@ -1,0 +1,489 @@
+{
+  "schema": 1,
+  "core": "1.1",
+  "colors": [
+    {
+      "key": "bg",
+      "group": "surfaces",
+      "root": true,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "chrome",
+      "group": "surfaces",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "surface",
+      "group": "surfaces",
+      "root": true,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "surfaceRaised",
+      "group": "surfaces",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "surfaceSunken",
+      "group": "surfaces",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "borderSoft",
+      "group": "borders",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "border",
+      "group": "borders",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "borderStrong",
+      "group": "borders",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "text",
+      "group": "text",
+      "root": true,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "textMuted",
+      "group": "text",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "textFaint",
+      "group": "text",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "icon",
+      "group": "text",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "accent",
+      "group": "accent",
+      "root": true,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "accentInk",
+      "group": "accent",
+      "root": false,
+      "accentDependent": true,
+      "since": "1.0"
+    },
+    {
+      "key": "accentTint",
+      "group": "accent",
+      "root": false,
+      "accentDependent": true,
+      "since": "1.0"
+    },
+    {
+      "key": "onAccent",
+      "group": "accent",
+      "root": false,
+      "accentDependent": true,
+      "since": "1.0"
+    },
+    {
+      "key": "hover",
+      "group": "surfaces",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "selected",
+      "group": "surfaces",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "accentBorder",
+      "group": "accent",
+      "root": false,
+      "accentDependent": true,
+      "since": "1.0"
+    },
+    {
+      "key": "danger",
+      "group": "status",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "dangerBg",
+      "group": "status",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "dangerText",
+      "group": "status",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "warnBg",
+      "group": "status",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "warnText",
+      "group": "status",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "infoBg",
+      "group": "status",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "infoText",
+      "group": "status",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "success",
+      "group": "status",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "successBg",
+      "group": "status",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "successText",
+      "group": "status",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    },
+    {
+      "key": "shadow",
+      "group": "other",
+      "root": false,
+      "accentDependent": false,
+      "since": "1.0"
+    }
+  ],
+  "extensions": [
+    {
+      "name": "nebular",
+      "app": "Nebular (NSL Dev)",
+      "keys": [
+        "canvas",
+        "dot",
+        "tableHead",
+        "pkBg",
+        "pkText",
+        "uqBg",
+        "uqText",
+        "nnBg",
+        "nnText",
+        "boardOutside",
+        "boardEdge",
+        "fkSource",
+        "fkChip"
+      ],
+      "accentDependents": [
+        "fkChip"
+      ],
+      "since": "1.0"
+    },
+    {
+      "name": "spectrum",
+      "app": "Spectrum (NSL Resonance)",
+      "keys": [
+        "panelBottom"
+      ],
+      "accentDependents": [],
+      "since": "1.0"
+    },
+    {
+      "name": "lyra",
+      "app": "Lyra (NSL Writer Tools)",
+      "keys": [
+        "body",
+        "accentDark",
+        "summary",
+        "snippet",
+        "chipText",
+        "border",
+        "dash",
+        "edge",
+        "navIndicator",
+        "typeCharacter",
+        "typePlace",
+        "typeOrg",
+        "typeEvent",
+        "typeItem",
+        "typeRule",
+        "typeSpecies",
+        "statusIdeaBg",
+        "statusIdeaFg",
+        "statusDraftBg",
+        "statusDraftFg",
+        "statusCanonBg",
+        "statusCanonFg"
+      ],
+      "accentDependents": [
+        "accentDark"
+      ],
+      "since": "1.1"
+    }
+  ],
+  "shape": {
+    "radius": {
+      "keys": [
+        "xs",
+        "sm",
+        "md",
+        "lg",
+        "xl",
+        "pill"
+      ],
+      "default": {
+        "xs": 4.0,
+        "sm": 6.0,
+        "md": 8.0,
+        "lg": 12.0,
+        "xl": 16.0,
+        "pill": 999.0
+      },
+      "min": 0.0,
+      "max": 999.0
+    }
+  },
+  "type": {
+    "roles": [
+      "family",
+      "content",
+      "mono"
+    ],
+    "scale": {
+      "min": 0.9,
+      "max": 1.2,
+      "default": 1.0
+    },
+    "minSize": {
+      "min": 8.0,
+      "max": 16.0
+    },
+    "fontNameMaxLength": 64
+  },
+  "density": [
+    "compact",
+    "normal",
+    "comfortable"
+  ],
+  "elevation": {
+    "modes": [
+      "shadow",
+      "flat"
+    ],
+    "strength": {
+      "min": 0.0,
+      "max": 1.5,
+      "default": 1.0
+    }
+  },
+  "appearance": {
+    "modes": [
+      "system",
+      "light",
+      "dark"
+    ],
+    "presets": [
+      {
+        "id": "teal",
+        "nameTh": "เขียวน้ำทะเล",
+        "nameEn": "Teal",
+        "light": {
+          "accent": "#0B6E7A",
+          "soft": "#D8EEF0",
+          "ink": "#08525B"
+        },
+        "dark": {
+          "accent": "#1B8C9A",
+          "soft": "#1C3F45",
+          "ink": "#8ADAE3"
+        }
+      },
+      {
+        "id": "blue",
+        "nameTh": "น้ำเงิน",
+        "nameEn": "Blue",
+        "light": {
+          "accent": "#2459C9",
+          "soft": "#DCE7FB",
+          "ink": "#1B4396"
+        },
+        "dark": {
+          "accent": "#3A74E0",
+          "soft": "#1B2C4D",
+          "ink": "#9DBBFA"
+        }
+      },
+      {
+        "id": "purple",
+        "nameTh": "ม่วง",
+        "nameEn": "Purple",
+        "light": {
+          "accent": "#6842C0",
+          "soft": "#E8E1F7",
+          "ink": "#4A2F8E"
+        },
+        "dark": {
+          "accent": "#7B58D6",
+          "soft": "#2A2145",
+          "ink": "#C7B3F7"
+        }
+      },
+      {
+        "id": "pink",
+        "nameTh": "ชมพู",
+        "nameEn": "Pink",
+        "light": {
+          "accent": "#B92D6A",
+          "soft": "#FBE1EC",
+          "ink": "#8A1F50"
+        },
+        "dark": {
+          "accent": "#D24A86",
+          "soft": "#45203A",
+          "ink": "#F5A8C8"
+        }
+      },
+      {
+        "id": "orange",
+        "nameTh": "ส้ม",
+        "nameEn": "Orange",
+        "light": {
+          "accent": "#BF5A12",
+          "soft": "#FCE8D6",
+          "ink": "#8A3E06"
+        },
+        "dark": {
+          "accent": "#DB6D1E",
+          "soft": "#45290F",
+          "ink": "#F8B885"
+        }
+      },
+      {
+        "id": "green",
+        "nameTh": "เขียว",
+        "nameEn": "Green",
+        "light": {
+          "accent": "#178A5E",
+          "soft": "#DDF3EA",
+          "ink": "#0F6B49"
+        },
+        "dark": {
+          "accent": "#22A877",
+          "soft": "#143B2D",
+          "ink": "#8EE0BF"
+        }
+      },
+      {
+        "id": "red",
+        "nameTh": "แดง",
+        "nameEn": "Red",
+        "light": {
+          "accent": "#C03A3A",
+          "soft": "#FBE4E4",
+          "ink": "#8E2626"
+        },
+        "dark": {
+          "accent": "#DB5555",
+          "soft": "#452222",
+          "ink": "#F5AAAA"
+        }
+      },
+      {
+        "id": "slate",
+        "nameTh": "เทาอมฟ้า",
+        "nameEn": "Slate",
+        "light": {
+          "accent": "#475569",
+          "soft": "#E2E8F0",
+          "ink": "#334155"
+        },
+        "dark": {
+          "accent": "#64748B",
+          "soft": "#232B36",
+          "ink": "#CBD5E1"
+        }
+      }
+    ]
+  },
+  "builtinThemes": [
+    {
+      "id": "nsl.default",
+      "name": "NSL Default"
+    },
+    {
+      "id": "nsl.nebular",
+      "name": "NSL Nebular"
+    },
+    {
+      "id": "nsl.spectrum",
+      "name": "NSL Spectrum"
+    },
+    {
+      "id": "nsl.lyra.paper",
+      "name": "Lyra Paper"
+    }
+  ],
+  "limits": {
+    "maxFileBytes": 65536,
+    "idPattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+    "reservedIdPrefix": "nsl."
+  }
+}

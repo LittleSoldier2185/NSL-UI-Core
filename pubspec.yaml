@@ -1,0 +1,32 @@
+name: nsl_ui
+description: UI core shared by NSL apps - design tokens, .nslt theme files, contrast tools.
+version: 1.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.5
+
+# หลักการ: พึ่งแค่ Flutter SDK เพื่อไม่ชนเวอร์ชัน dependency ของแอปต่าง ๆ
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  # ฟอนต์ไทยหลักของทุกแอป (SIL OFL ดู assets/fonts/OFL.txt)
+  # อ้างจากแอปด้วยชื่อ 'packages/nsl_ui/Noto Sans Thai'
+  fonts:
+    - family: Noto Sans Thai
+      fonts:
+        - asset: assets/fonts/NotoSansThai-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansThai-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSansThai-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NotoSansThai-Bold.ttf
+          weight: 700

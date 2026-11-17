@@ -1,0 +1,116 @@
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue';
+import { type Color, parseHex, toHex, toHex6 } from '../core/color';
+import { t } from '../i18n';
+
+const props = defineProps<{
+  label: string;
+  /** ค่าที่ resolve แล้ว (ใช้แสดงเมื่อสืบทอด) */
+  resolved: Color | undefined;
+  /** ค่าที่ผู้ใช้ตั้งไว้เอง (undefined = สืบทอด/คำนวณ) */
+  own: Color | undefined;
+}>();
+const emit = defineEmits<{ set: [Color]; clear: [] }>();
+
+const shown = computed(() => props.own ?? props.resolved);
+const text = ref(shown.value ? toHex(shown.value) : '');
+const bad = ref(false);
+
+watch(shown, (c) => {
+  if (c && parseHex(text.value) && toHex(parseHex(text.value)!) === toHex(c)) return; // กำลังพิมพ์ค่าที่ตรงกันอยู่ ไม่ทับ
+  text.value = c ? toHex(c) : '';
+  bad.value = false;
+});
+
+function onText(e: Event) {
+  const v = (e.target as HTMLInputElement).value.trim();
+  text.value = v;
+  const c = parseHex(v.startsWith('#') ? v : `#${v}`);
+  bad.value = c === null;
+  if (c) emit('set', c);
+}
+
+function onPicker(e: Event) {
+  const c = parseHex((e.target as HTMLInputElement).value);
+  if (c) emit('set', c);
+}
+</script>
+
+<template>
+  <div class="row" :class="{ own: own !== undefined }">
+    <label class="lbl">{{ label }}</label>
+    <input
+      class="pick"
+      type="color"
+      :value="shown ? toHex6(shown) : '#000000'"
+      :aria-label="label"
+      @input="onPicker"
+    />
+    <input
+      class="hex"
+      :class="{ bad }"
+      type="text"
+      :value="text"
+      maxlength="9"
+      spellcheck="false"
+      :aria-label="`${label} hex`"
+      :aria-invalid="bad"
+      @input="onText"
+    />
+    <button v-if="own !== undefined" class="clr" type="button" :title="t('clear')" @click="emit('clear')">↺</button>
+    <span v-else class="inh" :title="t('inherited')">·</span>
+  </div>
+</template>
+
+<style scoped>
+.row {
+  display: grid;
+  grid-template-columns: minmax(96px, 1fr) 34px 92px 26px;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+.lbl {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.own .lbl {
+  font-weight: 600;
+}
+.pick {
+  width: 34px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+.hex {
+  font: 12px ui-monospace, Consolas, monospace;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--ink);
+  width: 100%;
+}
+.hex.bad {
+  border-color: var(--danger);
+}
+.clr,
+.inh {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.clr {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+}
+</style>

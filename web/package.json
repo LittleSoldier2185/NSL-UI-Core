@@ -1,0 +1,26 @@
+{
+  "name": "nsl-palette",
+  "private": true,
+  "version": "1.1.0",
+  "description": "NSL Palette — เว็บสร้างไฟล์ธีม .nslt สำหรับแอป NSL (build แยกตามเวอร์ชัน core)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "build": "vue-tsc --noEmit && node scripts/build.mjs"
+  },
+  "dependencies": {
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@vitejs/plugin-vue": "^5.2.0",
+    "@vue/test-utils": "^2.6.0",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.6.0",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.0",
+    "vue-tsc": "^2.1.0"
+  }
+}
