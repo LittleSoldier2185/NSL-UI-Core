@@ -87,6 +87,23 @@ void main() {
       expect(d(NslDensity.normal).gap, lessThan(d(NslDensity.comfortable).gap));
     });
 
+    test('legibleOn: ผ่านอยู่แล้วคืนค่าเดิม · ไม่ผ่านขยับเข้าหาดำ/ขาวจนผ่าน · พื้นโปร่งผสมบน surface', () {
+      final t = _tokens(Brightness.light), c = t.colors;
+      expect(t.legibleOn(c.text, c.surface), c.text); // ผ่านอยู่แล้ว ไม่แตะ
+      // ขาวบนพื้นกลาง ๆ (contrast ต่ำ) → ได้สีที่ผ่าน 4.5 บนพื้นนั้น
+      const mid = Color(0xFF14958B); // accent ของ nebular โหมดมืด : ขาวบนนี้ได้ 3.68
+      final fixed = t.legibleOn(const Color(0xFFFFFFFF), mid);
+      expect(contrastRatio(fixed, mid), greaterThanOrEqualTo(4.5));
+      // พื้นมืดมาก ตัวอักษรเข้มเกินไป → ขยับไปทางขาว
+      const dark = Color(0xFF101010);
+      final up = t.legibleOn(const Color(0xFF303030), dark);
+      expect(contrastRatio(up, dark), greaterThanOrEqualTo(4.5));
+      expect(up.computeLuminance(), greaterThan(const Color(0xFF303030).computeLuminance()));
+      // พื้นโปร่งใส : วัดบน surface (ไม่ใช่ RGB ดิบของสีโปร่ง)
+      final translucent = c.text.withValues(alpha: 0.06);
+      expect(t.legibleOn(c.text, translucent), c.text);
+    });
+
     test('textStyle: ฟอนต์จากธีม, ขนาดคูณ scale และไม่ต่ำกว่า minSize', () {
       final base = _tokens(Brightness.light);
       final t = NslTokens(

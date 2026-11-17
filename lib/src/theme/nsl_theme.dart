@@ -60,4 +60,10 @@ extension NslContext on BuildContext {
     final t = Theme.of(this);
     return t.extension<NslTheme>()?.tokens ?? nslFallbackTokens(t.brightness);
   }
+
+  /// แพลตฟอร์มจอสัมผัส (Android/iOS/Fuchsia) — component ใช้เพื่อไม่ให้พื้นที่แตะเล็กกว่า 44
+  bool get nslTouch => switch (Theme.of(this).platform) {
+        TargetPlatform.android || TargetPlatform.iOS || TargetPlatform.fuchsia => true,
+        _ => false,
+      };
 }

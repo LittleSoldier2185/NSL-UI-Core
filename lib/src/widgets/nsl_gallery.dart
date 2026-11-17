@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../components/nsl_badge.dart';
+import '../components/nsl_button.dart';
+import '../components/nsl_icon_button.dart';
+import '../components/nsl_panel.dart';
 import '../contrast/contrast.dart';
+import '../theme/component_metrics.dart';
+import '../theme/nsl_theme.dart';
 import '../tokens/color_tokens.dart';
 import '../tokens/nsl_tokens.dart';
 
@@ -38,12 +44,47 @@ class NslGallery extends StatelessWidget {
         Card(child: Padding(padding: const EdgeInsets.all(12), child: Text('Card', style: t.textTheme.bodyMedium))),
         const SizedBox(height: 12),
         const LinearProgressIndicator(value: 0.6),
+        const SizedBox(height: 16),
+        Text('Components', style: t.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        // ถ้าระบุ tokens ให้ component พรีวิวด้วยธีมนั้น (ไม่ใช่ธีมของแอปที่ถือ Gallery)
+        if (tokens != null) NslThemeScope(tokens: tokens!, child: const _Components()) else const _Components(),
         if (tokens != null) ...[
           const SizedBox(height: 16),
           _ColorTable(tokens!),
         ],
       ]),
     );
+  }
+}
+
+/// ชุด component กลางของ nsl_ui ทุกชนิด/สถานะ — ใช้ดูหน้าตาและเป็นเป้าของเทสต์ overflow
+class _Components extends StatelessWidget {
+  const _Components();
+
+  @override
+  Widget build(BuildContext context) {
+    final gap = context.nsl.gap;
+    void noop() {}
+    return Column(key: const ValueKey('nsl-gallery-components'), crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Wrap(spacing: gap, runSpacing: gap, children: [
+        // ป้ายขึ้นต้นด้วย "Nsl" เพื่อไม่ซ้ำกับข้อความเดิมของ Gallery ('Primary', 'accent' ฯลฯ ที่เทสต์เดิมจับอยู่)
+        NslButton(label: 'Nsl primary', kind: NslButtonKind.primary, icon: Icons.check, onPressed: noop),
+        NslButton(label: 'Nsl secondary', onPressed: noop),
+        NslButton(label: 'Nsl danger', kind: NslButtonKind.danger, onPressed: noop),
+        NslButton(label: 'Nsl ghost', kind: NslButtonKind.ghost, onPressed: noop),
+        const NslButton(label: 'Nsl disabled', onPressed: null),
+      ]),
+      SizedBox(height: gap),
+      Wrap(spacing: gap, runSpacing: gap, crossAxisAlignment: WrapCrossAlignment.center, children: [
+        NslIconButton(icon: Icons.add, tooltip: 'Add', onPressed: noop),
+        NslIconButton(icon: Icons.view_sidebar, tooltip: 'Toggle panel', selected: true, onPressed: noop),
+        const NslIconButton(icon: Icons.delete, tooltip: 'Delete', onPressed: null),
+        for (final tone in NslBadgeTone.values) NslBadge('Nsl ${tone.name}', tone: tone),
+      ]),
+      SizedBox(height: gap),
+      const NslPanel(tone: NslPanelTone.raised, child: Text('Nsl panel (raised)')),
+    ]);
   }
 }
 
