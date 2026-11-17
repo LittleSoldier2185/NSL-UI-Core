@@ -41,6 +41,7 @@ class NslThemeSpec {
     this.density,
     this.elevationMode,
     this.elevationStrength,
+    this.apps = const [],
     this.unknown = const {},
     this.appearance,
   });
@@ -56,6 +57,13 @@ class NslThemeSpec {
   final String? extendsId;
 
   final NslModeSpec light, dark;
+
+  /// แอปที่ธีมนี้ออกแบบมาให้ (เช่น `orbit`, `lyra`) — **คำใบ้สำหรับจัดหมวด/กรองรายการเท่านั้น ไม่จำกัดการใช้งาน** ; ว่าง = ใช้ได้กับทุกแอป
+  /// ไม่สืบทอดจากธีมฐาน ; id ที่ไม่รู้จัก (แอปใหม่ในอนาคต) เก็บไว้
+  final List<String> apps;
+
+  /// ธีมนี้เหมาะกับแอป [appId] หรือไม่ (ไม่ระบุ `apps` = เหมาะกับทุกแอป)
+  bool targets(String appId) => apps.isEmpty || apps.contains(appId);
 
   /// มุมโค้งที่ระบุ (เฉพาะคีย์ที่ระบุ)
   final Map<String, double> radius;
@@ -96,6 +104,7 @@ class NslThemeSpec {
         density: density,
         elevationMode: elevationMode,
         elevationStrength: elevationStrength,
+        apps: apps,
         unknown: unknown,
         appearance: (a == null || !a.hasAccent) ? null : a,
       );
@@ -118,6 +127,7 @@ class NslThemeSpec {
         density: density,
         elevationMode: elevationMode,
         elevationStrength: elevationStrength,
+        apps: apps,
         unknown: unknown,
       );
 }

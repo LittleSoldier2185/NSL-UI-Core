@@ -1,5 +1,5 @@
 import { type ComputedRef, type Ref, computed, reactive, ref } from 'vue';
-import { type AppId, allAppIds, baseForApps, extensionsFor, laterExtensions } from './apps';
+import { type AppId, allAppIds, appById, appsOfSpec, baseForApps, extensionsFor, laterExtensions } from './apps';
 import { builtinIds, builtinSpecs, kBuiltinNebularId, makeLookup } from './core/builtin';
 import { type Color, parseHex, toHex } from './core/color';
 import { type ContrastCheck, checkContrast, contrastFailures, isUnusable } from './core/contrastReport';
@@ -69,12 +69,15 @@ export function useEditor(): Editor {
   const showAllExt = ref(false);
   // ผู้ใช้เลือกธีมฐานเองแล้ว (หรือนำเข้าไฟล์) = เลิกเปลี่ยนธีมฐานตามแอปที่เลือก
   const baseTouched = ref(false);
+  // จัดหมวดจากการเดา (ไฟล์ไม่ได้ระบุ apps) และผู้ใช้ยังไม่แตะการเลือกแอป = ไม่เขียน apps ลงไฟล์ตอนส่งออก (ไป-กลับได้ข้อความเท่าเดิม)
+  const appsGuessed = ref(false);
   const notices = ref<{ kind: 'error' | 'warn' | 'info'; text: string }[]>([]);
 
   const visibleExtensions = computed(() => extensionsFor(apps.value, showAllExt.value));
   const versionNotes = computed(() => laterExtensions(apps.value));
 
   function toggleApp(id: AppId) {
+    appsGuessed.value = false;
     if (apps.value.includes(id)) {
       if (apps.value.length === 1) return; // ต้องเหลืออย่างน้อยหนึ่งแอป
       apps.value = apps.value.filter((a) => a !== id);
@@ -171,6 +174,7 @@ export function useEditor(): Editor {
     apps.value = [...allAppIds];
     showAllExt.value = false;
     baseTouched.value = false;
+    appsGuessed.value = false;
     notices.value = [];
   }
 
@@ -197,6 +201,11 @@ export function useEditor(): Editor {
         for (const k of Object.keys(draft) as (keyof Draft)[]) delete (draft as unknown as Record<string, unknown>)[k];
         Object.assign(draft, d);
         idAuto.value = false;
+        // จัดหมวดตามไฟล์ : ใช้ apps ที่ระบุ ไม่มีก็ดูจากส่วนขยายที่มี ไม่พบ = ทุกแอป
+        const cat = appsOfSpec(spec);
+        apps.value = cat.apps;
+        appsGuessed.value = cat.inferred;
+        if (cat.inferred) say('info', t('appsInferred', { apps: cat.apps.map((a) => appById(a).name).join(', ') }));
         baseTouched.value = true;
       }
     }
@@ -211,16 +220,22 @@ export function useEditor(): Editor {
     delete library[effectiveId.value];
   }
 
+  /** apps ที่เขียนลงไฟล์ : เลือกครบทุกแอป = ไม่เขียน (ใช้ได้ทุกแอป) ; id ที่ editor ไม่รู้จักจากไฟล์ที่นำเข้าเก็บกลับไว้ */
+  function exportApps(): string[] {
+    const extras = (draft.apps ?? []).filter((a) => !(allAppIds as readonly string[]).includes(a));
+    return [...(apps.value.length === allAppIds.length || appsGuessed.value ? [] : apps.value), ...extras];
+  }
+
   const exportProblems = computed(() => {
     const out: Key[] = [];
     const id = effectiveId.value;
     if (!isValidThemeId(id)) out.push('badId');
     else if (isReservedThemeId(id)) out.push('reservedId');
-    if (new TextEncoder().encode(serializeNslt(draftToSpec({ ...draft, id }))).length > kNsltMaxBytes) out.push('tooBig');
+    if (new TextEncoder().encode(serializeNslt(draftToSpec({ ...draft, id, apps: exportApps() }))).length > kNsltMaxBytes) out.push('tooBig');
     return out.map((k) => t(k));
   });
 
-  const exportText = () => serializeNslt(draftToSpec({ ...draft, id: effectiveId.value }));
+  const exportText = () => serializeNslt(draftToSpec({ ...draft, id: effectiveId.value, apps: exportApps() }));
 
   return { draft, library, idAuto, apps, showAllExt, toggleApp, setBase, visibleExtensions, versionNotes, notices, baseChoices, views, effectiveId, exportProblems, exportText, setColor, setExt, setQuickAccent, setRadius, runAutoFix, resetAll, importFiles, say };
 }

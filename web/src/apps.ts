@@ -88,3 +88,28 @@ export function coreNum(v: string): number {
 export function laterExtensions(selected: readonly AppId[]) {
   return extensionsFor(selected, false).filter((e) => coreNum(e.since) > coreNum('1.0'));
 }
+
+/** แอปที่รู้จักจากรายการ id (ข้าม id ที่ไม่รู้จัก) เรียงตามลำดับมาตรฐาน */
+export function knownApps(ids: readonly string[]): AppId[] {
+  return allAppIds.filter((a) => ids.includes(a));
+}
+
+/**
+ * จัดหมวดธีมที่นำเข้า : ใช้คีย์ `apps` ในไฟล์ก่อน ; ไม่มี → ดูจากส่วนขยายที่มีค่าอยู่ (เช่น มี `lyra` = Lyra) ;
+ * ไม่พบเลย = ทุกแอป — คืน `inferred` = true เมื่อเดาจากส่วนขยาย
+ */
+export function appsOfSpec(spec: {
+  apps?: readonly string[];
+  light: { extensions: Record<string, unknown> };
+  dark: { extensions: Record<string, unknown> };
+}): { apps: AppId[]; inferred: boolean } {
+  const declared = knownApps(spec.apps ?? []);
+  if (declared.length > 0) return { apps: declared, inferred: false };
+  if ((spec.apps ?? []).length > 0) return { apps: [...allAppIds], inferred: false }; // ระบุแต่ id ที่ไม่รู้จัก = ไม่ทราบแอป
+  const present = new Set([...Object.keys(spec.light.extensions), ...Object.keys(spec.dark.extensions)]);
+  const found = allAppIds.filter((id) => {
+    const ext = appById(id).extension;
+    return ext !== undefined && present.has(ext);
+  });
+  return found.length > 0 ? { apps: found, inferred: true } : { apps: [...allAppIds], inferred: false };
+}

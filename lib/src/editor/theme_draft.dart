@@ -21,7 +21,9 @@ class NslThemeDraft {
     this.density,
     this.elevationMode,
     this.elevationStrength,
-  })  : light = light ?? {},
+    List<String>? apps,
+  })  : apps = apps ?? [],
+        light = light ?? {},
         dark = dark ?? {};
 
   factory NslThemeDraft.fromSpec(NslThemeSpec s) => NslThemeDraft(
@@ -35,9 +37,13 @@ class NslThemeDraft {
         density: s.density,
         elevationMode: s.elevationMode,
         elevationStrength: s.elevationStrength,
+        apps: [...s.apps],
       );
 
   String id, name, baseId;
+
+  /// แอปที่ธีมออกแบบมาให้ (คำใบ้จัดหมวด ไม่จำกัดการใช้งาน ; ว่าง = ทุกแอป)
+  final List<String> apps;
 
   /// สีที่ผู้ใช้กำหนดเอง (เฉพาะที่ต่างจากธีมฐาน) แยกตามโหมด
   final Map<String, Color> light, dark;
@@ -65,6 +71,7 @@ class NslThemeDraft {
         density: density,
         elevationMode: elevationMode,
         elevationStrength: elevationStrength,
+        apps: [...apps],
       );
 
   /// resolve เพื่อพรีวิว ; โยน [NslResolveException] ถ้าธีมฐานหาย

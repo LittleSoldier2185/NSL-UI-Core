@@ -38,6 +38,8 @@ dependencies:
 - **Derive / Tint** — คำนวณสีที่เกี่ยวเนื่องจาก accent และชุด `categorical` 8 สี
 - **Contrast** — ตรวจและรายงาน contrast รวมถึงสี `#RRGGBBAA` ที่มีความโปร่งใส
 - **รูปแบบ `.nslt`** — parse / serialize / resolve (สืบทอดธีม, ตรวจวนลูป, clamp ค่า) ทนไฟล์ผิดรูปแบบโดยไม่โยน exception
+  
+  คีย์ระดับบน `apps` (ไม่บังคับ) ระบุแอปที่ธีมออกแบบมาให้ เช่น `"apps": ["orbit"]` — เป็นคำใบ้จัดหมวด/กรอง ไม่จำกัดการใช้งาน ; `NslThemeSpec.targets(appId)`
 - **ที่เก็บธีม** — `NslThemeStore`, `NslThemeController`, `NslMemoryThemeStorage` พร้อม watcher และ safe mode
 - **ธีมในตัว** — `nsl.default`, `nsl.nebular`, `nsl.spectrum`, `nsl.lyra.paper`, `nsl.orbit` (id เหล่านี้ห้ามเปลี่ยน)
 - **Widget** — `NslAppearancePanel` (ชุดปรับแต่ง lite) และ `NslGallery`

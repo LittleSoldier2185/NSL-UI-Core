@@ -152,13 +152,27 @@ function parseInner(source: string): ParseResult {
     }
   }
 
-  const known = new Set(['schema', 'core', 'id', 'name', 'extends', 'light', 'dark', 'shape', 'type', 'density', 'elevation']);
+  // apps : รายชื่อ id ไม่ซ้ำ ≤ 16 — ผิดรูปแบบ = เตือนและเก็บค่าดิบไว้ใน unknown (ไม่ให้ข้อมูลหาย)
+  let apps: string[] = [];
+  let appsRaw = false;
+  if (root.apps !== undefined && root.apps !== null) {
+    const a = root.apps;
+    if (Array.isArray(a) && a.length <= 16 && a.every((e) => typeof e === 'string' && idRe.test(e))) apps = [...new Set(a as string[])];
+    else {
+      warnings.push('"apps" must be a list of up to 16 app ids — ignored');
+      appsRaw = true;
+    }
+  }
+
+  const known = new Set(['schema', 'core', 'id', 'name', 'extends', 'light', 'dark', 'shape', 'type', 'density', 'elevation', 'apps']);
   const unknown: Record<string, unknown> = {};
   for (const [k, val] of Object.entries(root)) if (!known.has(k)) unknown[k] = val;
+  if (appsRaw) unknown.apps = root.apps;
 
   const spec: ThemeSpec = { schema: sch, id, name: name as string, light, dark, radius, unknown };
   if (core !== undefined) spec.core = core;
   if (extendsId !== undefined) spec.extendsId = extendsId;
+  if (apps.length > 0) spec.apps = apps;
   if (family !== undefined) spec.family = family;
   if (content !== undefined) spec.content = content;
   if (mono !== undefined) spec.mono = mono;
@@ -263,6 +277,7 @@ export function serializeNslt(s: ThemeSpec): string {
   out.id = s.id;
   out.name = s.name;
   if (s.extendsId !== undefined) out.extends = s.extendsId;
+  if (s.apps !== undefined && s.apps.length > 0) out.apps = s.apps;
   const light = modeJson(s.light);
   const dark = modeJson(s.dark);
   if (Object.keys(light).length > 0) out.light = light;

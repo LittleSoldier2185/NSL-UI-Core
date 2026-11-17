@@ -168,8 +168,21 @@ NsltParseResult _parse(String source) {
     }
   }
 
-  const known = {'schema', 'core', 'id', 'name', 'extends', 'light', 'dark', 'shape', 'type', 'density', 'elevation'};
-  final unknown = <String, Object?>{for (final e in root.entries) if (!known.contains(e.key)) e.key: e.value};
+  // apps : รายชื่อ id แอป (ไม่ซ้ำ, ≤ 16) — ผิดรูปแบบ = เตือนและเก็บค่าดิบไว้ใน unknown เพื่อไม่ให้ข้อมูลหาย
+  var apps = <String>[];
+  var appsRaw = false;
+  final appsV = root['apps'];
+  if (appsV != null) {
+    if (appsV is List && appsV.length <= 16 && appsV.every((e) => e is String && _idRe.hasMatch(e))) {
+      apps = [...{...appsV.cast<String>()}];
+    } else {
+      warnings.add('"apps" must be a list of up to 16 app ids — ignored');
+      appsRaw = true;
+    }
+  }
+
+  const known = {'schema', 'core', 'id', 'name', 'extends', 'light', 'dark', 'shape', 'type', 'density', 'elevation', 'apps'};
+  final unknown = <String, Object?>{for (final e in root.entries) if (!known.contains(e.key)) e.key: e.value, if (appsRaw) 'apps': appsV};
 
   return NsltParseResult(
     spec: NslThemeSpec(
@@ -189,6 +202,7 @@ NsltParseResult _parse(String source) {
       density: density,
       elevationMode: emode,
       elevationStrength: estrength,
+      apps: apps,
       unknown: unknown,
     ),
     warnings: warnings,
@@ -315,6 +329,7 @@ String serializeNslt(NslThemeSpec s) {
     'id': s.id,
     'name': s.name,
     if (s.extendsId != null) 'extends': s.extendsId,
+    if (s.apps.isNotEmpty) 'apps': s.apps,
   };
   final light = _modeJson(s.light), dark = _modeJson(s.dark);
   if (light.isNotEmpty) out['light'] = light;

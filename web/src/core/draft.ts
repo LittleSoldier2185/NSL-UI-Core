@@ -23,6 +23,8 @@ export interface Draft {
   density?: Density;
   elevationMode?: ElevationMode;
   elevationStrength?: number;
+  /** แอปที่ธีมออกแบบมาให้ (ว่าง/ไม่มี = ทุกแอป) — เก็บ id ที่ไม่รู้จักไว้ด้วย */
+  apps?: string[];
   /** คีย์ที่ editor ไม่รู้จัก — เก็บกลับตอนบันทึก (ไม่ทำของรุ่นใหม่หาย) */
   unknown: Record<string, unknown>;
 }
@@ -49,6 +51,7 @@ export function draftFromSpec(s: ThemeSpec): Draft {
   if (s.density !== undefined) d.density = s.density;
   if (s.elevationMode !== undefined) d.elevationMode = s.elevationMode;
   if (s.elevationStrength !== undefined) d.elevationStrength = s.elevationStrength;
+  if (s.apps !== undefined) d.apps = [...s.apps];
   return d;
 }
 
@@ -75,6 +78,7 @@ export function draftToSpec(d: Draft): ThemeSpec {
     radius: { ...d.radius },
     unknown: { ...d.unknown },
   };
+  if (d.apps !== undefined && d.apps.length > 0) spec.apps = [...d.apps];
   if (d.family !== undefined) spec.family = d.family;
   if (d.content !== undefined) spec.content = d.content;
   if (d.mono !== undefined) spec.mono = d.mono;

@@ -33,6 +33,8 @@ export interface ThemeSpec {
   density?: Density;
   elevationMode?: ElevationMode;
   elevationStrength?: number;
+  /** แอปที่ธีมออกแบบมาให้ (คำใบ้จัดหมวด/กรอง ไม่จำกัดการใช้งาน) — ไม่มี = ทุกแอป ; ไม่สืบทอดจากธีมฐาน */
+  apps?: string[];
   /** คีย์ระดับบนสุดที่รุ่นนี้ไม่รู้จัก (เก็บไว้เขียนกลับ) */
   unknown: Record<string, unknown>;
   /** ค่า lite ของผู้ใช้ (ใช้ตอน resolve เท่านั้น ไม่เขียนลงไฟล์) */

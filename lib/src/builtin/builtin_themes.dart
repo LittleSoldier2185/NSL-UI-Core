@@ -18,6 +18,7 @@ const kResonanceDefaultAccent = Color(0xFFF4B860);
 /// NSL Dev: พาเลตต์ `kLightPalette` / `kDarkPalette` + ส่วนที่ `C` คำนวณตามโหมด
 final NslThemeSpec kBuiltinDev = NslThemeSpec(
   id: kBuiltinDevId,
+  apps: const ['nebular'],
   name: 'NSL Nebular',
   light: const NslModeSpec(
     colors: {
@@ -123,6 +124,7 @@ NslThemeSpec builtinResonance([Color accent = kResonanceDefaultAccent]) {
   const surfaceDark = Color(0xFF14151A);
   return NslThemeSpec(
     id: kBuiltinResonanceId,
+    apps: const ['spectrum'],
     name: 'NSL Spectrum',
     light: NslModeSpec(
       colors: {
@@ -179,6 +181,7 @@ NslThemeSpec builtinResonance([Color accent = kResonanceDefaultAccent]) {
 /// สีสถานะอื่นที่แอปเดิมไม่มี (warn/info/dangerBg ฯลฯ) ปล่อยให้ derive
 final NslThemeSpec kBuiltinLyraPaper = NslThemeSpec(
   id: kBuiltinLyraPaperId,
+  apps: const ['lyra'],
   name: 'Lyra Paper',
   light: const NslModeSpec(
     colors: {
@@ -291,6 +294,7 @@ final NslThemeSpec kBuiltinLyraPaper = NslThemeSpec(
 /// accent ชุดอื่นของ Orbit (น้ำเงิน, ม่วง, …) = ค่า lite (accent) ทับธีมนี้ — tint/ink ที่ derive อาจต่างจากตารางตายตัวของแอปเดิมเล็กน้อย
 final NslThemeSpec kBuiltinOrbit = NslThemeSpec(
   id: kBuiltinOrbitId,
+  apps: const ['orbit'],
   name: 'NSL Orbit',
   light: const NslModeSpec(
     colors: {

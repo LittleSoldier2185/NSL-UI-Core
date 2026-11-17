@@ -72,6 +72,7 @@ const dict = {
   notices: { th: 'ข้อความจากระบบ', en: 'Messages' },
   errImport: { th: 'นำเข้าไม่ได้:', en: 'Cannot import:' },
   warnImport: { th: 'คำเตือนตอนอ่านไฟล์:', en: 'Warnings while reading:' },
+  appsInferred: { th: 'จัดหมวดอัตโนมัติจากส่วนขยายในไฟล์ : {apps} (ไฟล์นี้ไม่ได้ระบุ apps — ส่งออกจะไม่เขียนเพิ่มจนกว่าจะปรับการเลือกแอป)', en: 'Categorised automatically from the extensions in the file: {apps} (no "apps" in the file — not added on export until you change the app selection)' },
   baseMissing: { th: 'ไม่พบธีมฐาน "{id}" — เปลี่ยนเป็น "{to}" (เลือกใหม่ได้)', en: 'Base "{id}" not found — switched to "{to}" (change it if needed)' },
   reservedId: { th: 'รหัสที่ขึ้นต้นด้วย nsl. สงวนไว้สำหรับธีมในตัว — แอปจะไม่รับไฟล์นี้', en: 'IDs starting with nsl. are reserved for built-in themes — apps reject this file' },
   badId: { th: 'รหัสต้องเป็น a-z 0-9 . _ - (ขึ้นต้นด้วยตัวอักษรหรือตัวเลข ไม่เกิน 64 ตัว)', en: 'ID must be a-z 0-9 . _ - (start with a letter or digit, max 64)' },
