@@ -13,8 +13,10 @@ const props = defineProps<{
   name?: string;
   /** ผลตรวจ contrast ที่แย่ที่สุดที่สีนี้เป็นตัวอักษร (ไม่มี = ไม่แสดง) */
   check?: { ratio: number; min: number; passes: boolean; against: string };
+  /** สีนี้ไม่มีในพรีวิวที่ดูอยู่ : ชื่อพรีวิวนั้น + ชื่อพรีวิวที่มีสีนี้ (ไม่มี = ไม่แสดงป้าย ; seeIn ว่าง = ไม่มีปุ่มสลับ) */
+  missing?: { in: string; seeIn?: string };
 }>();
-const emit = defineEmits<{ set: [Color]; clear: [] }>();
+const emit = defineEmits<{ set: [Color]; clear: []; peek: [boolean]; see: [] }>();
 
 const shown = computed(() => props.own ?? props.resolved);
 const text = ref(shown.value ? toHex(shown.value) : '');
@@ -41,8 +43,10 @@ function onPicker(e: Event) {
 </script>
 
 <template>
-  <div class="row" :class="{ own: own !== undefined }">
-    <span class="lbl"><b v-if="name && name !== label">{{ name }}</b> <span :class="{ key: name && name !== label }">{{ label }}</span></span>
+  <div class="row" :class="{ own: own !== undefined }" @mouseenter="emit('peek', true)" @mouseleave="emit('peek', false)" @focusin="emit('peek', true)" @focusout="emit('peek', false)">
+    <span class="lbl"><b v-if="name && name !== label">{{ name }}</b> <span :class="{ key: name && name !== label }">{{ label }}</span>
+      <span v-if="missing" class="miss">{{ t('notInPreview', { app: missing.in }) }}<button v-if="missing.seeIn" type="button" class="see" @click="emit('see')">{{ t('seeIn', { app: missing.seeIn }) }}</button></span>
+    </span>
     <input
       class="pick"
       type="color"
@@ -119,8 +123,8 @@ function onPicker(e: Event) {
   color: var(--ink);
   cursor: pointer;
 }
-</style>
-<style scoped>
+
+
 .key {
   font: 11px ui-monospace, Consolas, monospace;
   color: var(--muted);
@@ -143,5 +147,26 @@ function onPicker(e: Event) {
   height: 1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
+}
+</style>
+<style scoped>
+.miss {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.see {
+  font: inherit;
+  font-weight: 600;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--brand-ink);
+  text-decoration: underline;
+  cursor: pointer;
 }
 </style>

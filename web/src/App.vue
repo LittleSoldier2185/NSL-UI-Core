@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { type AppId, allAppIds, appById, apps, areas } from './apps';
 import { colorMatches, colorName } from './colorNames';
 import ColorRow from './components/ColorRow.vue';
@@ -12,6 +12,7 @@ import { resolveTokens } from './core/resolve';
 import { kNslCoreVersion } from './core/spec';
 import { type Brightness, schema } from './core/tokens';
 import { useEditor } from './editor';
+import { tokenElements } from './previewMap';
 import { type Key, lang, setLang, t } from './i18n';
 import { type UiTheme, setUiTheme, uiTheme, uiThemes } from './uiTheme';
 
@@ -236,6 +237,44 @@ async function copy() {
   }
 }
 
+// ── พรีวิวแสดงสีไหนบ้าง (อ่านจาก CSS จริงของพรีวิว) + ชี้ตำแหน่งเมื่อชี้/โฟกัสแถวสี ──
+const previewsEl = ref<HTMLElement | null>(null);
+const shown = ref<Set<string>>(new Set());
+async function refreshShown() {
+  await nextTick();
+  const pv = previewsEl.value?.querySelector('section.pv');
+  shown.value = pv ? new Set(tokenElements(pv).keys()) : new Set();
+}
+watch([previewApp, previewMode, lang, step], refreshShown);
+/** ป้าย "ไม่มีในพรีวิวนี้" ของสี core : ดูได้ใน "ทั่วไป" (ครบทุกสีเสมอ) */
+function missingCore(key: string) {
+  if (shown.value.size === 0 || shown.value.has(key)) return undefined;
+  return { in: appName(previewApp.value), seeIn: previewApp.value === 'generic' ? undefined : t('generic') };
+}
+/** ส่วนขยาย : ดูได้ในพรีวิวของแอปเจ้าของ (ถ้าแอปนั้นอยู่ในแท็บ) */
+function missingExt(ext: string, key: string) {
+  if (shown.value.size === 0 || shown.value.has(`${ext}.${key}`)) return undefined;
+  const owner = apps.find((a) => a.extension === ext);
+  const can = owner && previewTabs.value.includes(owner.id) && previewApp.value !== owner.id;
+  return { in: appName(previewApp.value), seeIn: can ? owner.name : undefined };
+}
+function seeExt(ext: string) {
+  const owner = apps.find((a) => a.extension === ext);
+  if (owner) previewApp.value = owner.id;
+}
+let peeked: Element[] = [];
+function peek(token: string | null) {
+  for (const el of peeked) el.classList.remove('pv-peek');
+  peeked = [];
+  if (!token || !previewsEl.value) return;
+  for (const pv of previewsEl.value.querySelectorAll('section.pv')) {
+    for (const el of tokenElements(pv).get(token) ?? []) {
+      el.classList.add('pv-peek');
+      peeked.push(el);
+    }
+  }
+}
+
 // ── ข้อความแจ้ง (มุมบนขวา) : แสดง 3 อันล่าสุด ปิดทีละอันได้ ──
 const toasts = computed(() => ed.notices.value.map((n, i) => ({ ...n, i })).slice(-3));
 function dismiss(i: number) {
@@ -243,6 +282,7 @@ function dismiss(i: number) {
 }
 
 onMounted(async () => {
+  void refreshShown();
   // รายชื่อเวอร์ชันที่โฮสต์ไว้ (versions.json อยู่ระดับเหนือโฟลเดอร์ของเวอร์ชันนี้) — ไม่มี = ไม่แสดงตัวสลับ
   try {
     const r = await fetch('../versions.json', { cache: 'no-store' });
@@ -453,10 +493,13 @@ onMounted(async () => {
               :label="c.key"
               :name="colorName(c.key, lang)"
               :check="worstCheck(c.key)"
+              :missing="missingCore(c.key)"
               :resolved="resolvedColor(c.key)"
               :own="own(c.key)"
               @set="(col) => ed.setColor(editMode, c.key, col)"
               @clear="ed.setColor(editMode, c.key, null)"
+              @peek="(on) => peek(on ? c.key : null)"
+              @see="previewApp = 'generic'"
             />
           </fieldset>
         </template>
@@ -482,6 +525,9 @@ onMounted(async () => {
               :label="k"
               :resolved="resolvedExt(e.name, k)"
               :own="ownExt(e.name, k)"
+              :missing="missingExt(e.name, k)"
+              @peek="(on) => peek(on ? e.name + '.' + k : null)"
+              @see="seeExt(e.name)"
               @set="(col) => ed.setExt(editMode, e.name, k, col)"
               @clear="ed.setExt(editMode, e.name, k, null)"
             />
@@ -642,7 +688,7 @@ onMounted(async () => {
             <button v-for="m in (['light', 'dark', 'both'] as PMode[])" :key="m" type="button" :class="{ on: previewMode === m }" :aria-pressed="previewMode === m" @click="previewMode = m">{{ t(m) }}</button>
           </div>
         </div>
-        <div class="previews">
+        <div ref="previewsEl" class="previews">
           <template v-for="m in shownModes" :key="m">
             <PreviewPane v-if="ed.views.value[m].tokens" :tokens="ed.views.value[m].tokens!" :title="t(m)" :app="previewApp" />
             <p v-else class="err">{{ t(m) }}: {{ t('cannotResolve') }} {{ ed.views.value[m].error }}</p>

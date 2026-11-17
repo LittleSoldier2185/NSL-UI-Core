@@ -13,7 +13,7 @@ const entries = computed(() => mockText.value.lyra.entries.map((e, i) => ({ ...e
     <div class="bar"><strong>{{ mockText.lyra.world }}</strong><span class="sp"></span><span class="pill">{{ mockText.lyra.newEntry }}</span></div>
     <div class="body">
       <nav class="list">
-        <div v-for="e in entries" :key="e.name" class="row" :class="{ on: e.on }">
+        <div v-for="(e, i) in entries" :key="e.name" class="row" :class="{ on: e.on, hover: i === 2 }">
           <span class="glyph" :class="`t-${e.type}`">{{ e.glyph }}</span>
           <span class="nm">{{ e.name }}</span>
           <span class="st" :class="`s-${e.status}`">{{ e.status }}</span>
@@ -83,6 +83,9 @@ const entries = computed(() => mockText.value.lyra.entries.map((e, i) => ({ ...e
   padding: calc(var(--pad) * 0.6) var(--pad);
   border-radius: var(--r-sm);
   font-size: var(--fs-sm);
+}
+.row.hover {
+  background: var(--c-hover);
 }
 .row.on {
   background: var(--e-lyra-navIndicator);

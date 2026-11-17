@@ -1058,3 +1058,27 @@ select {
   background: #ffffff;
   color: var(--top);
 }
+
+/* ชี้ตำแหน่งในพรีวิว : ส่วนที่ใช้สีของแถวที่กำลังชี้/โฟกัส (สีชมพูสด + เส้นประ เห็นได้บนทุกธีม) */
+.pv-peek {
+  outline: 2px dashed #ff2e93 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 46, 147, 0.25) !important;
+}
+
+:is(circle, path, line, rect).pv-peek {
+  outline: none !important;
+  filter: drop-shadow(0 0 1.5px #ff2e93) drop-shadow(0 0 1.5px #ff2e93);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pv-peek {
+    animation: pv-peek 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes pv-peek {
+  50% {
+    outline-color: rgba(255, 46, 147, 0.4);
+  }
+}

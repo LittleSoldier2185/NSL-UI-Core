@@ -525,3 +525,58 @@ describe('พรีวิวตามภาษาของหน้าเว็�
     expect(src).toContain('vector-effect="non-scaling-stroke"');
   });
 });
+
+describe('พรีวิวแสดงสีไหนบ้าง + ชี้ตำแหน่ง', () => {
+  const tabs = () => wrapper.findAll('.ptabs button');
+  const rowOf = (key: string) => wrapper.findAll('.row').find((r) => r.find(`input[aria-label="${key} hex"]`).exists())!;
+
+  it('พรีวิว "ทั่วไป" แสดงสี core ครบทุกตัว (อ่านจาก CSS จริง) — สีใหม่ใน schema ที่ไม่มีในพรีวิวจะทำให้เทสต์นี้ล้ม', async () => {
+    const { tokenElements } = await import('../src/previewMap');
+    const { schema } = await import('../src/core/tokens');
+    await tabs()[4]!.trigger('click'); // ทั่วไป
+    const shown = new Set(tokenElements(wrapper.get('section.pv').element).keys());
+    const missing = schema.colors.map((c) => c.key).filter((k) => !shown.has(k));
+    expect(missing).toEqual([]);
+  });
+
+  it('สีที่ไม่มีในพรีวิวของแอปที่ดูอยู่ → แถวบอก และปุ่ม "ดูใน ทั่วไป" สลับพรีวิวให้ ; สีที่มีอยู่ไม่ขึ้นป้าย', async () => {
+    await tabs()[0]!.trigger('click'); // Nebular
+    await go('colors');
+    await flushPromises();
+    const danger = rowOf('dangerBg');
+    expect(danger.get('.miss').text()).toContain('ไม่มีในพรีวิว Nebular');
+    expect(rowOf('accent').find('.miss').exists()).toBe(false);
+    await danger.get('button.see').trigger('click');
+    await flushPromises();
+    expect(tabs()[4]!.attributes('aria-selected')).toBe('true');
+    expect(rowOf('dangerBg').find('.miss').exists()).toBe(false);
+  });
+
+  it('สีเฉพาะแอป : ไม่มีในพรีวิวที่ดูอยู่ → ปุ่มพาไปพรีวิวของแอปเจ้าของ', async () => {
+    await tabs()[0]!.trigger('click'); // Nebular
+    await go('ext');
+    await flushPromises();
+    const lyraRow = rowOf('summary'); // lyra.summary
+    expect(lyraRow.get('.miss').text()).toContain('Nebular');
+    await lyraRow.get('button.see').trigger('click');
+    await flushPromises();
+    expect(tabs()[2]!.attributes('aria-selected')).toBe('true'); // Lyra
+    expect(rowOf('summary').find('.miss').exists()).toBe(false);
+  });
+
+  it('ชี้เมาส์/โฟกัสที่แถวสี → ส่วนที่ใช้สีนั้นในพรีวิว (ทั้งสองโหมด) ถูกเน้น ; ออกแล้วหาย', async () => {
+    await go('colors');
+    await flushPromises();
+    const peeked = () => wrapper.findAll('.pv-peek').length;
+    await rowOf('accent').trigger('mouseenter');
+    const n = peeked();
+    expect(n).toBeGreaterThan(1);
+    expect(wrapper.findAll('section.pv').every((pv) => pv.findAll('.pv-peek').length > 0)).toBe(true);
+    await rowOf('accent').trigger('mouseleave');
+    expect(peeked()).toBe(0);
+    await rowOf('hover').trigger('focusin');
+    expect(peeked()).toBeGreaterThan(0);
+    await rowOf('hover').trigger('focusout');
+    expect(peeked()).toBe(0);
+  });
+});

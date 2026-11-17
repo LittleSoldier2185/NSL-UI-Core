@@ -28,7 +28,7 @@ const headInk = computed(() => toHex(onAccentFor(props.tokens.extensions.nebular
         <div class="tbl t1">
           <div class="th">users</div>
           <div class="tr"><span>id</span><i class="b pk">PK</i></div>
-          <div class="tr"><span>email</span><i class="b uq">UQ</i></div>
+          <div class="tr hover"><span>email</span><i class="b uq">UQ</i></div>
           <div class="tr"><span>name</span><i class="b nn">NN</i></div>
         </div>
         <div class="tbl t2">
@@ -151,6 +151,9 @@ const headInk = computed(() => toHex(onAccentFor(props.tokens.extensions.nebular
   box-sizing: border-box;
   overflow: hidden;
   border-top: 1px solid var(--c-borderSoft);
+}
+.tr.hover {
+  background: var(--c-hover);
 }
 .tr.fk {
   background: var(--e-nebular-fkSource);

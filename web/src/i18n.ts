@@ -184,6 +184,8 @@ const dict = {
   dismiss: { th: 'ปิด', en: 'Dismiss' },
   versionLabel: { th: 'เวอร์ชันเว็บ', en: 'Web version' },
   uiTheme: { th: 'ธีมของหน้าเว็บนี้', en: 'Theme of this page' },
+  notInPreview: { th: 'ไม่มีในพรีวิว {app}', en: 'Not in the {app} preview' },
+  seeIn: { th: 'ดูใน {app}', en: 'See in {app}' },
   ui_system: { th: 'ตามระบบ', en: 'Match system' },
   ui_light: { th: 'สว่าง', en: 'Light' },
   ui_dark: { th: 'มืด', en: 'Dark' },

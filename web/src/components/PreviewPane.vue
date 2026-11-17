@@ -53,7 +53,7 @@ const chips = computed(() =>
         <p>{{ mockText.generic.body }}</p>
         <p class="pv-muted">{{ mockText.generic.muted }} <span class="pv-link">{{ mockText.generic.link }}</span></p>
         <p class="pv-content">{{ mockText.generic.content }}</p>
-        <p class="pv-mono">const theme = "mono";</p>
+        <p class="pv-mono">const theme = "mono"; <kbd class="pv-kbd">Ctrl</kbd>+<kbd class="pv-kbd">S</kbd></p>
         <div class="pv-actions">
           <button class="pv-btn pv-primary" type="button">{{ mockText.generic.primary }}</button>
           <button class="pv-btn pv-tint" type="button">{{ mockText.generic.tint }}</button>
@@ -66,6 +66,10 @@ const chips = computed(() =>
           <span class="pv-alert pv-warn">{{ mockText.generic.warn }}</span>
           <span class="pv-alert pv-info">{{ mockText.generic.info }}</span>
           <span class="pv-alert pv-success">{{ mockText.generic.success }}</span>
+        </div>
+        <div class="pv-solids">
+          <span><i class="pv-sd pv-sd-danger"></i>{{ mockText.generic.dangerSolid }}</span>
+          <span><i class="pv-sd pv-sd-success"></i>{{ mockText.generic.successSolid }}</span>
         </div>
         <div class="pv-chips" aria-label="categorical">
           <span v-for="c in chips" :key="c.id" class="pv-chip" :style="{ background: c.bg, color: c.fg }">{{ c.name }}</span>
@@ -229,6 +233,37 @@ p {
   background: var(--c-successBg);
   color: var(--c-successText);
 }
+.pv-kbd {
+  font: inherit;
+  font-size: 0.9em;
+  padding: 0 5px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--c-borderStrong);
+  background: var(--c-surfaceSunken);
+  color: var(--c-text);
+}
+.pv-solids {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pad-lg);
+  font-size: var(--fs-sm);
+}
+.pv-solids span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pv-sd {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.pv-sd-danger {
+  background: var(--c-danger);
+}
+.pv-sd-success {
+  background: var(--c-success);
+}
 .pv-chips {
   display: flex;
   flex-wrap: wrap;
@@ -241,7 +276,7 @@ p {
 }
 .pv-card {
   background: var(--c-surfaceRaised);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
   padding: var(--pad-lg);
   box-shadow: var(--shadow);
   border: var(--flat-border);
