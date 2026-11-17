@@ -9,6 +9,7 @@ import { ResolveError } from './core/resolve';
 import { type ThemeSpec, newSpec } from './core/spec';
 import { accentTints } from './core/tint';
 import type { Brightness, NslTokens } from './core/tokens';
+import { type History, createHistory } from './history';
 import { type Key, t } from './i18n';
 
 export interface ModeView {
@@ -20,6 +21,8 @@ export interface ModeView {
 }
 
 export interface Editor {
+  /** Undo/Redo ของสิ่งที่ผู้ใช้แก้ (ธีม แอปที่เลือก ฯลฯ — ไม่รวมข้อความแจ้งและธีมที่นำเข้ามาเป็นฐาน) */
+  history: History;
   draft: Draft;
   library: Record<string, ThemeSpec>;
   idAuto: Ref<boolean>;
@@ -74,6 +77,20 @@ export function useEditor(): Editor {
   // จัดหมวดจากการเดา (ไฟล์ไม่ได้ระบุ apps) และผู้ใช้ยังไม่แตะการเลือกแอป = ไม่เขียน apps ลงไฟล์ตอนส่งออก (ไป-กลับได้ข้อความเท่าเดิม)
   const appsGuessed = ref(false);
   const notices = ref<{ kind: 'error' | 'warn' | 'info'; text: string }[]>([]);
+
+  // ── Undo/Redo : snapshot ของสถานะที่ผู้ใช้แก้ ──
+  const history = createHistory({
+    current: () => JSON.stringify({ draft, idAuto: idAuto.value, apps: apps.value, baseTouched: baseTouched.value, appsGuessed: appsGuessed.value }),
+    restore: (snap) => {
+      const s = JSON.parse(snap) as { draft: Draft; idAuto: boolean; apps: AppId[]; baseTouched: boolean; appsGuessed: boolean };
+      for (const k of Object.keys(draft) as (keyof Draft)[]) delete (draft as unknown as Record<string, unknown>)[k];
+      Object.assign(draft, s.draft);
+      idAuto.value = s.idAuto;
+      apps.value = s.apps;
+      baseTouched.value = s.baseTouched;
+      appsGuessed.value = s.appsGuessed;
+    },
+  });
 
   const visibleExtensions = computed(() => extensionsFor(apps.value, showAllExt.value));
   const versionNotes = computed(() => laterExtensions(apps.value));
@@ -151,6 +168,7 @@ export function useEditor(): Editor {
 
   /** สีเดียว → ชุด accent ของทั้งสองโหมด (accent, accentTint, accentInk, onAccent) ด้วยสูตรเดียวกับ lite ในแอป */
   function setQuickAccent(c: Color) {
+    history.checkpoint();
     for (const mode of ['light', 'dark'] as const) {
       const [acc, soft, ink] = accentTints(c, mode === 'dark');
       const m = mode === 'light' ? draft.light : draft.dark;
@@ -160,6 +178,7 @@ export function useEditor(): Editor {
       delete m.onAccent; // ให้ระบบคำนวณใหม่จาก accent
       delete m.accentBorder;
     }
+    history.checkpoint();
   }
 
   function setRadius(key: string, v: number | null) {
@@ -168,8 +187,11 @@ export function useEditor(): Editor {
   }
 
   function runAutoFix(): number {
+    history.checkpoint();
     try {
-      return autoFix(draft, lookup.value);
+      const n = autoFix(draft, lookup.value);
+      history.checkpoint();
+      return n;
     } catch (e) {
       if (e instanceof ResolveError) return 0;
       throw e;
@@ -177,6 +199,7 @@ export function useEditor(): Editor {
   }
 
   function resetAll() {
+    history.checkpoint();
     const f = freshDraft();
     for (const k of Object.keys(draft) as (keyof Draft)[]) delete (draft as unknown as Record<string, unknown>)[k];
     Object.assign(draft, f);
@@ -186,9 +209,11 @@ export function useEditor(): Editor {
     baseTouched.value = false;
     appsGuessed.value = false;
     notices.value = [];
+    history.checkpoint();
   }
 
   function importFiles(files: { name: string; text: string }[]) {
+    history.checkpoint();
     let first = true;
     for (const f of files) {
       const r = parseNslt(f.text);
@@ -228,6 +253,7 @@ export function useEditor(): Editor {
     }
     // ธีมที่เพิ่งนำเข้าไม่ควรเป็นฐานของตัวเอง
     delete library[effectiveId.value];
+    history.checkpoint();
   }
 
   /** apps ที่เขียนลงไฟล์ : เลือกครบทุกแอป = ไม่เขียน (ใช้ได้ทุกแอป) ; id ที่ editor ไม่รู้จักจากไฟล์ที่นำเข้าเก็บกลับไว้ */
@@ -247,7 +273,7 @@ export function useEditor(): Editor {
 
   const exportText = () => serializeNslt(draftToSpec({ ...draft, id: effectiveId.value, apps: exportApps() }));
 
-  return { draft, library, idAuto, apps, showAllExt, toggleApp, setApps, setBase, visibleExtensions, versionNotes, notices, baseChoices, views, effectiveId, exportProblems, exportText, setColor, setExt, setQuickAccent, setRadius, runAutoFix, resetAll, importFiles, say };
+  return { history, draft, library, idAuto, apps, showAllExt, toggleApp, setApps, setBase, visibleExtensions, versionNotes, notices, baseChoices, views, effectiveId, exportProblems, exportText, setColor, setExt, setQuickAccent, setRadius, runAutoFix, resetAll, importFiles, say };
 }
 
 export { parseHex, toHex };

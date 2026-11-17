@@ -1113,3 +1113,19 @@ select {
 }
 .noext p { margin: 0 0 10px; }
 .noext img { border-radius: 4px; }
+
+/* Undo/Redo ที่แถบบน + ปุ่มกลับ */
+.uh {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.btn.icon {
+  padding: 0;
+  width: 36px;
+  justify-content: center;
+}
+
+.nextrow .back {
+  background: transparent;
+}

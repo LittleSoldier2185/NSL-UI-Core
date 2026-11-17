@@ -140,8 +140,9 @@ describe('หน้าแก้ไขธีม', () => {
     await go('start');
     await wrapper.get('.nextrow button').trigger('click');
     expect(current()).toBe('colors');
+    // ขั้นแก้ขั้นสุดท้ายไม่ใช่ปลายทางแล้ว : "ถัดไป" พาไปตรวจความอ่านง่าย (รายละเอียดปุ่มกลับ/ถัดไปอยู่ใน undo.test.ts)
     await go('style');
-    expect(wrapper.find('.nextrow').exists()).toBe(false); // ขั้นสุดท้ายไม่มี "ถัดไป"
+    expect(wrapper.get('.nextrow').text()).toContain('อ่านง่ายไหม');
   });
 
   it('รูปทรง/ตัวอักษร/ความหนาแน่น/เงา: ค่าที่ตั้งถูกเขียนลงไฟล์ ; ค่าเริ่มต้นไม่ถูกเขียน', async () => {

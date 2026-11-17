@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { type AppId, allAppIds, appById, apps, areas } from './apps';
 import { colorMatches, colorName } from './colorNames';
 import ColorRow from './components/ColorRow.vue';
@@ -30,10 +30,10 @@ const stepTitle = (s: Step) => t(`step_${s}` as Key);
 function go(s: Step) {
   step.value = s;
 }
-const nextStep = computed<Step | null>(() => {
-  const i = mainSteps.indexOf(step.value);
-  return i >= 0 && i < mainSteps.length - 1 ? mainSteps[i + 1]! : null;
-});
+/** ลำดับทั้งหมดที่ปุ่ม "กลับ/ถัดไป" เดิน : 5 ขั้นแก้ → ตรวจความอ่านง่าย → ไฟล์ */
+const flow: Step[] = [...mainSteps, 'check', 'file'];
+const nextStep = computed<Step | null>(() => flow[flow.indexOf(step.value) + 1] ?? null);
+const prevStep = computed<Step | null>(() => flow[flow.indexOf(step.value) - 1] ?? null);
 
 const editMode = ref<Brightness>('light');
 const copied = ref(false);
@@ -272,13 +272,46 @@ function peek(token: string | null) {
   }
 }
 
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKey);
+  ed.history.dispose();
+});
+
 // ── ข้อความแจ้ง (มุมบนขวา) : แสดง 3 อันล่าสุด ปิดทีละอันได้ ──
 const toasts = computed(() => ed.notices.value.map((n, i) => ({ ...n, i })).slice(-3));
 function dismiss(i: number) {
   ed.notices.value.splice(i, 1);
 }
 
+// ── Undo / Redo ──
+function doUndo() {
+  if (ed.history.undo()) ed.say('info', t('undone'));
+}
+function doRedo() {
+  if (ed.history.redo()) ed.say('info', t('redone'));
+}
+/**
+ * Ctrl/⌘+Z = ย้อน, Ctrl/⌘+Y หรือ Ctrl/⌘+Shift+Z = ทำซ้ำ — ใช้ได้ทุกที่ รวมตอนพิมพ์อยู่ในช่องที่เป็นส่วนของธีม (ชื่อ, hex, ตัวเลข)
+ * เพราะสิ่งที่พิมพ์ก็อยู่ในประวัติเดียวกัน ; ยกเว้นช่องที่ไม่ใช่ส่วนของธีม (ค้นหาสี, hex สีหลักแบบเร็ว) = `data-native-undo` ใช้ undo ของช่องเอง
+ */
+function onKey(e: KeyboardEvent) {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  // target อาจเป็น window/document (ไม่มี closest) เมื่อไม่มีอะไรโฟกัส
+  const target = e.target instanceof HTMLElement ? e.target : null;
+  const native = target?.closest('[data-native-undo]') != null;
+  if (native || target instanceof HTMLTextAreaElement || target?.isContentEditable === true) return;
+  const k = e.key.toLowerCase();
+  if (k === 'z' && !e.shiftKey) {
+    e.preventDefault();
+    doUndo();
+  } else if (k === 'y' || (k === 'z' && e.shiftKey)) {
+    e.preventDefault();
+    doRedo();
+  }
+}
+
 onMounted(async () => {
+  window.addEventListener('keydown', onKey);
   void refreshShown();
   // รายชื่อเวอร์ชันที่โฮสต์ไว้ (versions.json อยู่ระดับเหนือโฟลเดอร์ของเวอร์ชันนี้) — ไม่มี = ไม่แสดงตัวสลับ
   try {
@@ -312,6 +345,14 @@ onMounted(async () => {
         <span>{{ t('importShort') }}</span>
         <input type="file" accept=".nslt,.json,application/json" multiple hidden @change="onPick" />
       </label>
+      <div class="uh" role="group" :aria-label="t('history')">
+        <button type="button" class="btn dk icon undo" :disabled="!ed.history.canUndo.value" :aria-label="t('undo')" :title="t('undoHint', { n: ed.history.undoCount.value })" @click="doUndo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
+        </button>
+        <button type="button" class="btn dk icon redo" :disabled="!ed.history.canRedo.value" :aria-label="t('redo')" :title="t('redoHint', { n: ed.history.redoCount.value })" @click="doRedo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 14 5-5-5-5" /><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13" /></svg>
+        </button>
+      </div>
       <button class="btn primary" type="button" :disabled="problems.length > 0" :title="problems.length > 0 ? t('problemsN', { n: problems.length }) : undefined" @click="download">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" /></svg>
         <span>{{ t('download') }}</span>
@@ -453,7 +494,7 @@ onMounted(async () => {
               <span class="vsep" aria-hidden="true"></span>
               <span class="custom">
                 <input v-model="quick" type="color" :aria-label="t('customColour')" />
-                <input v-model="quick" type="text" maxlength="7" class="mono" :aria-label="`${t('customColour')} hex`" />
+                <input v-model="quick" data-native-undo type="text" maxlength="7" class="mono" :aria-label="`${t('customColour')} hex`" />
                 <button class="btn" type="button" @click="applyQuick">{{ t('applyAccent') }}</button>
               </span>
             </div>
@@ -473,7 +514,7 @@ onMounted(async () => {
           </div>
           <div class="searchbar">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-            <input v-model="search" type="search" :placeholder="t('searchColors')" :aria-label="t('searchColors')" />
+            <input v-model="search" data-native-undo type="search" :placeholder="t('searchColors')" :aria-label="t('searchColors')" />
             <label class="chk"><input v-model="onlyOwn" type="checkbox" /> {{ t('onlyOwn') }}</label>
           </div>
           <p v-if="groups.length === 0" class="small">{{ t('noColorMatch') }}</p>
@@ -674,8 +715,10 @@ onMounted(async () => {
           </section>
         </template>
 
-        <div v-if="nextStep" class="nextrow">
-          <button class="btn" type="button" @click="go(nextStep)">{{ t('next', { step: stepTitle(nextStep) }) }}</button>
+        <div v-if="prevStep || nextStep" class="nextrow">
+          <button v-if="prevStep" class="btn back" type="button" @click="go(prevStep)">{{ t('back', { step: stepTitle(prevStep) }) }}</button>
+          <span class="grow"></span>
+          <button v-if="nextStep" class="btn" type="button" @click="go(nextStep)">{{ t('next', { step: stepTitle(nextStep) }) }}</button>
         </div>
       </main>
 
