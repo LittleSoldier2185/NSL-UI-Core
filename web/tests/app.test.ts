@@ -326,16 +326,15 @@ describe('เลือกแอป + พรีวิวเฉพาะแอป'
     expect(wrapper.find('.notes').exists()).toBe(false);
   });
 
-  it('เลือกแค่ Orbit: ขั้นสีเฉพาะแอปบอกว่ายังไม่มี แต่ติ๊ก "แสดงส่วนขยายของแอปอื่น" แล้วเห็นทั้งหมด', async () => {
+  it('เลือกแค่ Orbit: ขั้นสีเฉพาะแอปบอกว่า Orbit ไม่มี และแนะนำให้เพิ่มแอปที่ขั้นเริ่มต้น (ไม่มีปุ่มสลับ เพราะไม่มีแอปที่มีสีเฉพาะ)', async () => {
     for (const i of [0, 1, 2]) await box(i).setValue(false);
     expect(wrapper.get('nav.steps button[data-step="ext"]').text()).toContain('ไม่มีสำหรับแอปที่เลือก');
     await go('ext');
-    expect(wrapper.text()).toContain('Orbit ยังไม่มีค่าเฉพาะแอป');
+    expect(wrapper.get('.noext').text()).toContain('Orbit ไม่มีสีเฉพาะแอป');
+    expect(wrapper.get('.noext').text()).toContain('เพิ่มแอปได้ที่ขั้น');
+    expect(wrapper.findAll('.noext button').length).toBe(0);
     expect(wrapper.findAll('fieldset.grp').length).toBe(0);
-    const showAll = wrapper.findAll('label.chk').find((l) => l.text().includes('แสดงส่วนขยายของแอปอื่น'))!;
-    await showAll.get('input').setValue(true);
-    expect(wrapper.findAll('fieldset.grp').length).toBe(3); // nebular, spectrum, lyra
-    expect(wrapper.text()).not.toContain('Orbit ยังไม่มีค่าเฉพาะแอป');
+    expect(wrapper.text()).not.toContain('แสดงส่วนขยายของแอปอื่น');
   });
 
   it('สลับภาษาเป็นอังกฤษ: การ์ดเลือกแอปและตารางแปลครบ', async () => {
@@ -552,16 +551,32 @@ describe('พรีวิวแสดงสีไหนบ้าง + ชี้�
     expect(rowOf('dangerBg').find('.miss').exists()).toBe(false);
   });
 
-  it('สีเฉพาะแอป : ไม่มีในพรีวิวที่ดูอยู่ → ปุ่มพาไปพรีวิวของแอปเจ้าของ', async () => {
+  it('ขั้นสีเฉพาะแอปแสดงเฉพาะกลุ่มของแอปที่พรีวิวอยู่ ; สลับแท็บพรีวิวแล้วกลุ่มเปลี่ยนตาม ; ไม่มีป้าย "ไม่มีในพรีวิว"', async () => {
+    const legends = () => wrapper.findAll('fieldset.grp legend').map((l) => l.text().split(' ·')[0]);
     await tabs()[0]!.trigger('click'); // Nebular
     await go('ext');
     await flushPromises();
-    const lyraRow = rowOf('summary'); // lyra.summary
-    expect(lyraRow.get('.miss').text()).toContain('Nebular');
-    await lyraRow.get('button.see').trigger('click');
+    expect(legends()).toEqual(['Nebular']);
+    expect(rowOf('tableHead').exists()).toBe(true);
+    await tabs()[2]!.trigger('click'); // Lyra
     await flushPromises();
-    expect(tabs()[2]!.attributes('aria-selected')).toBe('true'); // Lyra
-    expect(rowOf('summary').find('.miss').exists()).toBe(false);
+    expect(legends()).toEqual(['Lyra']);
+    expect(rowOf('summary').exists()).toBe(true);
+    expect(wrapper.findAll('.miss').length).toBe(0);
+  });
+
+  it('ขั้นสีเฉพาะแอป + พรีวิว "ทั่วไป"/Orbit : บอกให้เลือกแอป และมีปุ่มพาไปแก้สีของแอปที่มี', async () => {
+    await go('ext');
+    await tabs()[4]!.trigger('click'); // ทั่วไป
+    expect(wrapper.get('.noext').text()).toContain('เลือกพรีวิวของแอป');
+    expect(wrapper.findAll('fieldset.grp').length).toBe(0);
+    const btns = wrapper.findAll('.noext button');
+    expect(btns.map((b) => b.text())).toEqual(['แก้สีของ Nebular', 'แก้สีของ Spectrum', 'แก้สีของ Lyra']);
+    await btns[1]!.trigger('click');
+    expect(tabs()[1]!.attributes('aria-selected')).toBe('true');
+    expect(wrapper.findAll('fieldset.grp legend').map((l) => l.text().split(' ·')[0])).toEqual(['Spectrum']);
+    await tabs()[3]!.trigger('click'); // Orbit
+    expect(wrapper.get('.noext').text()).toContain('Orbit ไม่มีสีเฉพาะแอป');
   });
 
   it('ชี้เมาส์/โฟกัสที่แถวสี → ส่วนที่ใช้สีนั้นในพรีวิว (ทั้งสองโหมด) ถูกเน้น ; ออกแล้วหาย', async () => {
@@ -633,6 +648,7 @@ describe('สีเฉพาะแอป : ครบในพรีวิวข�
 
   it('หัวกลุ่มสีเฉพาะแอปใช้ชื่อแอปสั้น (ไม่ใช่ชื่อเก่า)', async () => {
     await go('ext');
+    await tabs()[2]!.trigger('click'); // Lyra
     const legends = wrapper.findAll('fieldset.grp legend').map((l) => l.text());
     expect(legends.some((l) => l.startsWith('Lyra ·'))).toBe(true);
     expect(legends.join(' ')).not.toContain('Writer Tools');

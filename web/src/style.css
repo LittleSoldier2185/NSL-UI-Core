@@ -1111,3 +1111,5 @@ select {
     outline-color: rgba(255, 46, 147, 0.4);
   }
 }
+.noext p { margin: 0 0 10px; }
+.noext img { border-radius: 4px; }

@@ -251,17 +251,14 @@ function missingCore(key: string) {
   if (shown.value.size === 0 || shown.value.has(key)) return undefined;
   return { in: appName(previewApp.value), seeIn: previewApp.value === 'generic' ? undefined : t('generic') };
 }
-/** ส่วนขยาย : ดูได้ในพรีวิวของแอปเจ้าของ (ถ้าแอปนั้นอยู่ในแท็บ) */
-function missingExt(ext: string, key: string) {
-  if (shown.value.size === 0 || shown.value.has(`${ext}.${key}`)) return undefined;
-  const owner = apps.find((a) => a.extension === ext);
-  const can = owner && previewTabs.value.includes(owner.id) && previewApp.value !== owner.id;
-  return { in: appName(previewApp.value), seeIn: can ? owner.name : undefined };
-}
-function seeExt(ext: string) {
-  const owner = apps.find((a) => a.extension === ext);
-  if (owner) previewApp.value = owner.id;
-}
+/** ขั้นสีเฉพาะแอป : แสดงเฉพาะกลุ่มของแอปที่พรีวิวอยู่ (พรีวิวของแอปมีสีเฉพาะแอปครบเสมอ — มีเทสต์คุม จึงไม่ต้องมีป้าย "ไม่มีในพรีวิว") */
+const extOfPreview = computed(() => {
+  if (previewApp.value === 'generic') return undefined;
+  const name = appById(previewApp.value).extension;
+  return name ? schema.extensions.find((e) => e.name === name) : undefined;
+});
+/** แอปที่เลือกไว้และมีสีเฉพาะแอป — ปุ่มสลับพรีวิวไปแก้ */
+const extApps = computed(() => ed.apps.value.filter((a) => appById(a).extension !== undefined));
 let peeked: Element[] = [];
 function peek(token: string | null) {
   for (const el of peeked) el.classList.remove('pv-peek');
@@ -515,9 +512,16 @@ onMounted(async () => {
               <button v-for="m in modes" :key="m" type="button" :class="{ on: editMode === m }" :aria-pressed="editMode === m" @click="editMode = m">{{ t(m) }}</button>
             </div>
           </div>
-          <label class="chk"><input v-model="ed.showAllExt.value" type="checkbox" /> {{ t('showOtherExt') }}</label>
-          <p v-if="ed.visibleExtensions.value.length === 0" class="small">{{ t('extOrbit') }}</p>
-          <fieldset v-for="e in ed.visibleExtensions.value" :key="e.name" class="grp card">
+          <section v-if="!extOfPreview" class="card noext">
+            <p>{{ previewApp === 'generic' ? t('extPickApp') : t('extNoneFor', { app: appName(previewApp) }) }}</p>
+            <div v-if="extApps.length > 0" class="btns">
+              <button v-for="a in extApps" :key="a" class="btn" type="button" @click="previewApp = a">
+                <img :src="brand(a + '.svg')" alt="" width="18" height="18" />{{ t('editAppColors', { app: appById(a).name }) }}
+              </button>
+            </div>
+            <p v-else class="small">{{ t('extNoSelected') }}</p>
+          </section>
+          <fieldset v-for="e in extOfPreview ? [extOfPreview] : []" :key="e.name" class="grp card">
             <legend>{{ extAppName(e.name) }} · <code>{{ e.name }}</code> · core ≥ {{ e.since }}</legend>
             <ColorRow
               v-for="k in e.keys"
@@ -525,9 +529,7 @@ onMounted(async () => {
               :label="k"
               :resolved="resolvedExt(e.name, k)"
               :own="ownExt(e.name, k)"
-              :missing="missingExt(e.name, k)"
               @peek="(on) => peek(on ? e.name + '.' + k : null)"
-              @see="seeExt(e.name)"
               @set="(col) => ed.setExt(editMode, e.name, k, col)"
               @clear="ed.setExt(editMode, e.name, k, null)"
             />
