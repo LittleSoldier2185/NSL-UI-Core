@@ -11,6 +11,7 @@
 - การเข้าถึง token : `NslTheme` (ThemeExtension), `NslThemeScope`, `context.nsl` (ไม่มี extension = ใช้ `nsl.default` ตามโหมดของ Theme), `context.nslTouch`
 - ตัวช่วยกลาง : `NslTokens.controlHeight({touch})`, `gap`, `textStyle(...)`, `legibleOn(fg, bg)` (ปรับสีตัวอักษรให้ผ่าน 4.5:1 เฉพาะเมื่อไม่ผ่าน)
 - component : `NslButton` (primary/secondary/danger/ghost), `NslIconButton`, `NslPanel` (surface/raised/sunken), `NslBadge` (6 โทน), `NslProgressBar`, `NslEmptyState`, `NslListRow` (ภาพนำ + ชื่อ + รอง + ท้ายแถว, สถานะ selected/active), `NslNavItem` (ไอคอน + ป้ายชื่อ + ป้ายเลข, แบบเต็ม/ย่อ)
+- **`NslColorPicker`** : ตัวเลือกสีอิสระ (พื้นที่ความสด/ความสว่าง + แถบเฉดสี + HEX + สีสำเร็จรูป) เป็นส่วนเนื้อหา ไม่มีปุ่มตกลง/ยกเลิก — ครอบด้วย dialog/sheet ของแอปเอง ; `NslColorPickerStrings` (th/en)
   - ค่าทั้งหมดมาจาก token (สี, มุมโค้ง `shape`, ระยะ/ความสูงตาม `density`, ฟอนต์/ขนาดตาม `type`, เงาตาม `elevation`) — มีเทสต์ guard ห้ามฮาร์ดโค้ดสี/มุมโค้ง/ขนาดตัวอักษรในไฟล์ component
   - จอสัมผัสพื้นที่แตะ ≥ 44 · Semantics ครบ (ปุ่มมี action แตะ) · โฟกัสคีย์บอร์ดเห็นวงชัด · contrast ≥ 4.5 ทุกธีมในตัว × 2 โหมด (ตรวจจากสีที่เรนเดอร์จริง)
 - `NslGallery` : เพิ่มส่วน "Components" (พรีวิวด้วย `tokens` ที่ส่งเข้ามา) — ข้อความเดิมของ Gallery ไม่เปลี่ยน

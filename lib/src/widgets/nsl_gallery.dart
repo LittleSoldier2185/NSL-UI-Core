@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../components/nsl_badge.dart';
 import '../components/nsl_button.dart';
+import '../components/nsl_color_picker.dart';
 import '../components/nsl_empty_state.dart';
 import '../components/nsl_icon_button.dart';
 import '../components/nsl_list_row.dart';
@@ -114,6 +115,11 @@ class _Components extends StatelessWidget {
         SizedBox(width: gap),
         NslNavItem(icon: Icons.inbox, label: 'Nsl nav collapsed badge', selected: false, collapsed: true, badge: 9, onTap: noop),
       ]),
+      SizedBox(height: gap),
+      SizedBox(
+        width: 320,
+        child: NslColorPicker(color: const Color(0xFF0F766E), onChanged: (_) {}, presets: const [Color(0xFF0F766E), Color(0xFF7B58D6)]),
+      ),
       SizedBox(height: gap),
       // ความสูงจำกัด : Gallery เองเลื่อนอยู่แล้ว และ NslEmptyState เลื่อนได้ในตัว (ห้ามซ้อนเลื่อนในพื้นที่สูงไม่จำกัด)
       NslPanel(

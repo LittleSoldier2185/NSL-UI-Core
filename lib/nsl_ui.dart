@@ -18,6 +18,7 @@ export 'src/tokens/nsl_tokens.dart';
 export 'src/store/theme_controller.dart';
 export 'src/components/nsl_badge.dart';
 export 'src/components/nsl_button.dart';
+export 'src/components/nsl_color_picker.dart';
 export 'src/components/nsl_empty_state.dart';
 export 'src/components/nsl_icon_button.dart';
 export 'src/components/nsl_list_row.dart';
