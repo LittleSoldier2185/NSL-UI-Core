@@ -580,3 +580,19 @@ describe('พรีวิวแสดงสีไหนบ้าง + ชี้�
     expect(peeked()).toBe(0);
   });
 });
+
+describe('แถบเลื่อนของพรีวิวแยกจากหน้า', () => {
+  it('CSS : พรีวิวติดจอ สูงไม่เกินจอ เลื่อนในตัวเอง และไม่ลากทั้งหน้า ; จอแคบกลับเป็นเลื่อนไปกับหน้า', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const css = readFileSync(resolve(__dirname, '../src/style.css'), 'utf8');
+    const rule = /\n\.preview \{([^}]*)\}/.exec(css)![1]!;
+    expect(rule).toContain('position: sticky');
+    expect(rule).toMatch(/max-height: calc\(100vh - \d+px\)/);
+    expect(rule).toContain('overflow-y: auto');
+    expect(rule).toContain('overscroll-behavior: contain');
+    const narrow = /@media \(max-width: 1180px\) \{[\s\S]*?\.preview \{([^}]*)\}/.exec(css)![1]!;
+    expect(narrow).toContain('max-height: none');
+    expect(narrow).toContain('overflow: visible');
+  });
+});
