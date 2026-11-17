@@ -8,7 +8,7 @@
 | **NSL Palette** (Vue 3 + TS) | `web/` | เว็บที่ทำงานในเบราว์เซอร์ล้วน ๆ สำหรับปรับธีมแบบลึกแล้วดาวน์โหลดเป็น `.nslt` |
 | **Schema** | `schema/tokens.schema.json` | รายชื่อ token, ช่วงค่า, preset และธีมในตัว สร้างจาก Dart |
 
-เวอร์ชันปัจจุบัน: **1.2.0** (รูปแบบ token/ไฟล์ธีม core 1.1) — ดูประวัติใน [`CHANGELOG.md`](CHANGELOG.md), แผนทั้งหมดใน [`Plan.md`](Plan.md), ความคืบหน้าใน [`progress.md`](progress.md)
+เวอร์ชันปัจจุบัน: **1.1.0** — ดูประวัติใน [`CHANGELOG.md`](CHANGELOG.md), แผนทั้งหมดใน [`Plan.md`](Plan.md), ความคืบหน้าใน [`progress.md`](progress.md)
 
 ## แนวคิด
 

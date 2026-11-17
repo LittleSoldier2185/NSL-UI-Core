@@ -1,6 +1,6 @@
 name: nsl_ui
 description: UI core shared by NSL apps - design tokens, .nslt theme files, contrast tools.
-version: 1.2.0
+version: 1.1.0
 publish_to: none
 
 environment:

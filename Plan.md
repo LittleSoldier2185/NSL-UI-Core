@@ -346,7 +346,7 @@ elevation.strength: 0.0 – 1.5            # คูณความเข้ม�
 3. จอสัมผัส : พื้นที่แตะ ≥ `kMinTapTarget` (44) · Semantics ครบ (button/enabled/label/selected) · โฟกัสคีย์บอร์ดเห็นได้
 4. สถานะ disabled/hover/pressed/focus ครบ · ข้อความยาวตัดด้วย ellipsis ไม่ overflow ที่ scale 1.2 และ density ทั้งสามแบบ
 5. คู่สีที่ใช้ต้องผ่านเกณฑ์ contrast เดียวกับตัวตรวจของ core (เทสต์ผ่านทุกธีมในตัว × 2 โหมด)
-6. เพิ่มเข้า `NslGallery` (ส่วน "Components") เพื่อพรีวิว ; export จาก `nsl_ui.dart` ; เวอร์ชันแพ็กเกจ → 1.2.0 + `CHANGELOG.md` โดย **`kNslCoreVersion` คง `1.1`** (ไม่แตะ token/schema/ไฟล์ธีม จึงไม่ต้องแตะเว็บ/fixture — ตัดสินใจตอนทำเฟส 15)
+6. เพิ่มเข้า `NslGallery` (ส่วน "Components") เพื่อพรีวิว ; export จาก `nsl_ui.dart` ; `CHANGELOG.md` ลงเป็น "Unreleased" **ไม่ขยับเลขเวอร์ชัน** (pubspec คง 1.1.0, `kNslCoreVersion` คง `1.1` — ยังพัฒนาอยู่ ผู้ใช้ตัดสินใจ 2026-11-17 ; ไม่แตะ token/schema/ไฟล์ธีม จึงไม่ต้องแตะเว็บ/fixture)
 
 **เฟส:**
 - **เฟส 13 — รากฐาน** : `NslTheme`/`context.nsl` + fallback · เทสต์ guard (ห้ามสี/มุมโค้งฮาร์ดโค้ด) · ✔ เสร็จเมื่อ: อ่าน token ได้ทั้งมีและไม่มี extension, เทสต์เดิม 154 ข้อยังผ่าน
