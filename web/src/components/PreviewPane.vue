@@ -14,10 +14,10 @@ import SpectrumMock from './mocks/SpectrumMock.vue';
 import { mockText } from './mocks/mockText';
 
 /** app = หน้าตาโดยประมาณของแอปนั้น ; 'generic' = ตัวอย่างกลาง (widget มาตรฐานทั้งหมด) */
-const props = withDefaults(defineProps<{ tokens: NslTokens; title: string; app?: AppId | 'generic' }>(), { app: 'generic' });
+const props = withDefaults(defineProps<{ tokens: NslTokens; title: string; app?: AppId | 'generic'; thaiFirst?: readonly string[] }>(), { app: 'generic', thaiFirst: () => [] });
 
 /** สีทั้งหมดเป็น CSS variables — พรีวิวเปลี่ยนสดตาม token (HTML/CSS ประมาณการ ไม่ใช่ widget จริง) */
-const style = computed(() => cssVars(props.tokens));
+const style = computed(() => cssVars(props.tokens, props.thaiFirst));
 
 const dark = computed(() => props.tokens.brightness === 'dark');
 const chips = computed(() =>

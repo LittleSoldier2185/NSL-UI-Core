@@ -7,11 +7,13 @@ import ContrastPanel from './components/ContrastPanel.vue';
 import PreviewPane from './components/PreviewPane.vue';
 import { builtinSpecs, makeLookup } from './core/builtin';
 import { parseHex, toHex6 } from './core/color';
+import { type FontIssue, planFontOrder } from './core/fontInfo';
 import { accentPresets } from './core/presets';
 import { resolveTokens } from './core/resolve';
 import { kNslCoreVersion } from './core/spec';
 import { type Brightness, schema } from './core/tokens';
 import { useEditor } from './editor';
+import { useFontLibrary } from './fontLibrary';
 import { tokenElements } from './previewMap';
 import { type Key, lang, setLang, t } from './i18n';
 import { useToasts } from './toasts';
@@ -168,6 +170,27 @@ function num(e: Event): number | null {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
+const fontLib = useFontLibrary();
+onBeforeUnmount(() => fontLib.dispose());
+const fontError = ref('');
+async function onPickFont(e: Event) {
+  const input = e.target as HTMLInputElement;
+  fontError.value = '';
+  for (const f of [...(input.files ?? [])].slice(0, 5)) {
+    const r = await fontLib.add(f);
+    if (!r.ok) fontError.value = `${f.name}: ${r.error}`;
+  }
+  input.value = '';
+}
+const fontRoles = [
+  { role: 'family', label: 'fontFamily', latin: 'family', thai: 'familyThai' },
+  { role: 'content', label: 'fontContent', latin: 'content', thai: 'contentThai' },
+  { role: 'mono', label: 'fontMono', latin: 'mono', thai: 'monoThai' },
+] as const;
+/** แผนลำดับฟอนต์ต่อบทบาท (ตัดสินเฉพาะฟอนต์ที่เลือกไฟล์ไว้ในหน้านี้) */
+const fontPlans = computed(() => fontRoles.map((r) => ({ ...r, plan: planFontOrder(fontLib.infoOf(draft[r.latin]), fontLib.infoOf(draft[r.thai])) })));
+const thaiFirst = computed(() => fontPlans.value.filter((p) => p.plan.thaiFirst).map((p) => p.role));
+const fontNotes = computed(() => fontPlans.value.flatMap((p) => p.plan.issues.map((i: FontIssue) => `${t(p.label)}: ${t(`fontIssue${i}` as Key)}`)));
 function setText(field: 'family' | 'content' | 'mono' | 'familyThai' | 'contentThai' | 'monoThai', e: Event) {
   const v = (e.target as HTMLInputElement).value.trim();
   if (v === '') delete draft[field];
@@ -620,13 +643,30 @@ onMounted(async () => {
           </fieldset>
           <fieldset class="grp card">
             <legend>{{ t('fontFamily') }}</legend>
-            <label class="f">{{ t('fontFamily') }}<input type="text" maxlength="64" :value="draft.family ?? ''" placeholder="Noto Sans Thai" @input="(e) => setText('family', e)" /></label>
-            <label class="f">{{ t('fontContent') }}<input type="text" maxlength="64" :value="draft.content ?? ''" @input="(e) => setText('content', e)" /></label>
-            <label class="f">{{ t('fontMono') }}<input type="text" maxlength="64" :value="draft.mono ?? ''" @input="(e) => setText('mono', e)" /></label>
-            <label class="f">{{ t('fontFamilyThai') }}<input type="text" maxlength="64" :value="draft.familyThai ?? ''" @input="(e) => setText('familyThai', e)" /></label>
-            <label class="f">{{ t('fontContentThai') }}<input type="text" maxlength="64" :value="draft.contentThai ?? ''" @input="(e) => setText('contentThai', e)" /></label>
-            <label class="f">{{ t('fontMonoThai') }}<input type="text" maxlength="64" :value="draft.monoThai ?? ''" @input="(e) => setText('monoThai', e)" /></label>
+            <label class="f">{{ t('fontFamily') }}<input type="text" maxlength="64" list="user-fonts" :value="draft.family ?? ''" placeholder="Noto Sans Thai" @input="(e) => setText('family', e)" /></label>
+            <label class="f">{{ t('fontContent') }}<input type="text" maxlength="64" list="user-fonts" :value="draft.content ?? ''" @input="(e) => setText('content', e)" /></label>
+            <label class="f">{{ t('fontMono') }}<input type="text" maxlength="64" list="user-fonts" :value="draft.mono ?? ''" @input="(e) => setText('mono', e)" /></label>
+            <label class="f">{{ t('fontFamilyThai') }}<input type="text" maxlength="64" list="user-fonts" :value="draft.familyThai ?? ''" @input="(e) => setText('familyThai', e)" /></label>
+            <label class="f">{{ t('fontContentThai') }}<input type="text" maxlength="64" list="user-fonts" :value="draft.contentThai ?? ''" @input="(e) => setText('contentThai', e)" /></label>
+            <label class="f">{{ t('fontMonoThai') }}<input type="text" maxlength="64" list="user-fonts" :value="draft.monoThai ?? ''" @input="(e) => setText('monoThai', e)" /></label>
+            <datalist id="user-fonts"><option v-for="f in fontLib.fonts.value" :key="f.family" :value="f.family" /></datalist>
+            <ul v-if="fontNotes.length" class="font-notes" role="status">
+              <li v-for="n in fontNotes" :key="n">{{ n }}</li>
+            </ul>
             <p class="small">{{ t('fontHint') }}</p>
+            <label class="btn font-pick">
+              {{ t('fontImport') }}
+              <input type="file" accept=".ttf,.otf,font/ttf,font/otf" multiple hidden data-testid="font-input" @change="onPickFont" />
+            </label>
+            <p class="small">{{ t('fontImportHint') }}</p>
+            <p v-if="fontError" class="font-error" role="alert">{{ t('fontError') }} — {{ fontError }}</p>
+            <ul v-if="fontLib.fonts.value.length" class="font-list" :aria-label="t('fontLoaded')">
+              <li v-for="f in fontLib.fonts.value" :key="f.family">
+                <strong :style="{ fontFamily: `'${f.family}'` }">{{ f.family }}</strong>
+                <span class="small">{{ f.info.coversThai ? t('fontHasThai') : '' }} {{ f.info.coversLatin ? t('fontHasLatin') : '' }}</span>
+                <button type="button" class="btn" @click="fontLib.remove(f.family)">{{ t('fontRemove') }}</button>
+              </li>
+            </ul>
             <label class="num">
               <span>{{ t('scale') }} ({{ (draft.scale ?? schema.type.scale.default).toFixed(2) }})</span>
               <input type="range" :min="schema.type.scale.min" :max="schema.type.scale.max" step="0.05" :value="draft.scale ?? schema.type.scale.default" @input="setScale" />
@@ -737,7 +777,7 @@ onMounted(async () => {
         </div>
         <div ref="previewsEl" class="previews">
           <template v-for="m in shownModes" :key="m">
-            <PreviewPane v-if="ed.views.value[m].tokens" :tokens="ed.views.value[m].tokens!" :title="t(m)" :app="previewApp" />
+            <PreviewPane v-if="ed.views.value[m].tokens" :tokens="ed.views.value[m].tokens!" :title="t(m)" :app="previewApp" :thai-first="thaiFirst" />
             <p v-else class="err">{{ t(m) }}: {{ t('cannotResolve') }} {{ ed.views.value[m].error }}</p>
           </template>
         </div>

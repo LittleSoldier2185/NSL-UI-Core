@@ -5,7 +5,7 @@ import type { NslTokens } from './core/tokens';
  * token → CSS variables ของพรีวิว (HTML/CSS ประมาณการ ไม่ใช่ widget จริง)
  * `--c-<สี core>` · `--e-<ส่วนขยาย>-<คีย์>` · `--r-*` มุมโค้ง · `--fs*` ขนาดตัวอักษร · `--pad*` ระยะ · `--shadow` · `--flat-border`
  */
-export function cssVars(tk: NslTokens): Record<string, string> {
+export function cssVars(tk: NslTokens, thaiFirst: readonly string[] = []): Record<string, string> {
   const v: Record<string, string> = {};
   for (const [k, c] of Object.entries(tk.colors)) v[`--c-${k}`] = toHex(c);
   for (const [name, vals] of Object.entries(tk.extensions)) {
@@ -29,8 +29,10 @@ export function cssVars(tk: NslTokens): Record<string, string> {
   v['--shadow'] = sh.mode === 'flat' ? 'none' : `0 ${2 * sh.strength}px ${12 * sh.strength}px ${toHex({ ...tk.colors.shadow!, a: Math.min(1, 0.18 * sh.strength) })}`;
   v['--flat-border'] = sh.mode === 'flat' ? `1px solid ${toHex(tk.colors.border!)}` : '1px solid transparent';
   const names = (...f: (string | undefined)[]) => f.filter((x): x is string => !!x).map((x) => `"${x}"`);
-  if (tk.type.family || tk.type.familyThai) v['--ff'] = [...names(tk.type.family, tk.type.familyThai, 'Noto Sans Thai'), 'system-ui', 'sans-serif'].join(', ');
-  if (tk.type.mono || tk.type.monoThai) v['--ff-mono'] = [...names(tk.type.mono, tk.type.monoThai), 'ui-monospace', 'monospace'].join(', ');
-  if (tk.type.content || tk.type.contentThai) v['--ff-content'] = [...names(tk.type.content, tk.type.contentThai, 'Noto Serif Thai'), 'Georgia', 'serif'].join(', ');
+  /** ลำดับ ละติน → ไทย (ไทยก่อนเมื่อแผนสั่ง หรือเมื่อมีแต่ช่องไทย) ให้ตรงกับ NslType.fallback ฝั่งแอป */
+  const order = (role: string, latin?: string, thai?: string) => (thai && (!latin || thaiFirst.includes(role)) ? [thai, latin] : [latin, thai]);
+  if (tk.type.family || tk.type.familyThai) v['--ff'] = [...names(...order('family', tk.type.family, tk.type.familyThai), 'Noto Sans Thai'), 'system-ui', 'sans-serif'].join(', ');
+  if (tk.type.mono || tk.type.monoThai) v['--ff-mono'] = [...names(...order('mono', tk.type.mono, tk.type.monoThai)), 'ui-monospace', 'monospace'].join(', ');
+  if (tk.type.content || tk.type.contentThai) v['--ff-content'] = [...names(...order('content', tk.type.content, tk.type.contentThai), 'Noto Serif Thai'), 'Georgia', 'serif'].join(', ');
   return v;
 }

@@ -1158,3 +1158,10 @@ select {
 .nextrow .back {
   background: transparent;
 }
+
+/* ฟอนต์ที่เลือกจากเครื่อง (พรีวิว) */
+.font-pick { display: inline-block; cursor: pointer; }
+.font-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.font-list li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.font-notes { margin: 6px 0; padding-left: 18px; color: var(--warn, #8a5a00); font-size: 13px; }
+.font-error { color: var(--danger, #b3261e); font-size: 13px; }
