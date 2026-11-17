@@ -128,6 +128,7 @@ void main() {
     final files = <File>[
       File('lib/src/theme/nsl_theme.dart'),
       File('lib/src/theme/component_metrics.dart'),
+      File('lib/src/theme/nsl_theme_data.dart'),
       if (Directory('lib/src/components').existsSync())
         ...Directory('lib/src/components').listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart')),
     ];

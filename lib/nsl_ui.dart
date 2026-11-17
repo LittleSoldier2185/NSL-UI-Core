@@ -25,6 +25,7 @@ export 'src/components/nsl_progress_bar.dart';
 export 'src/theme/adjust.dart';
 export 'src/theme/component_metrics.dart';
 export 'src/theme/nsl_theme.dart';
+export 'src/theme/nsl_theme_data.dart';
 export 'src/widgets/nsl_gallery.dart';
 export 'src/store/store_models.dart';
 export 'src/store/theme_storage.dart';

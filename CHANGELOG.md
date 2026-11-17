@@ -7,6 +7,7 @@
 
 เพิ่มอย่างเดียว — **ชุด component กลาง** (Dart เท่านั้น) ; **ไม่แตะ token / schema / รูปแบบไฟล์ `.nslt`** จึง **`kNslCoreVersion` ยังเป็น `1.1`** และ `pubspec.yaml` ยังเป็น 1.1.0 (เว็บ NSL Palette, fixture, ตราในไฟล์ธีม และแอปที่ใช้ core 1.1 ไม่ต้องเปลี่ยนอะไร) — จะกำหนดเลขตอนปล่อย
 
+- **`buildNslThemeData(tokens, {platform})`** : สร้าง `ThemeData` ของ Material จาก token ทั้งชุด (ColorScheme ครบ + component themes ของปุ่ม/ช่องกรอก/dialog/เมนู/snackbar/tooltip/switch/checkbox/radio/chip/segmented/slider/listTile/tab/navigationBar ฯลฯ) พร้อมแนบ `NslTheme` — ตัวควบคุมของ Material ตรงกับ component ของ nsl_ui ; เพิ่มอย่างเดียว แอปที่มี `buildTheme` เองใช้ต่อได้
 - การเข้าถึง token : `NslTheme` (ThemeExtension), `NslThemeScope`, `context.nsl` (ไม่มี extension = ใช้ `nsl.default` ตามโหมดของ Theme), `context.nslTouch`
 - ตัวช่วยกลาง : `NslTokens.controlHeight({touch})`, `gap`, `textStyle(...)`, `legibleOn(fg, bg)` (ปรับสีตัวอักษรให้ผ่าน 4.5:1 เฉพาะเมื่อไม่ผ่าน)
 - component : `NslButton` (primary/secondary/danger/ghost), `NslIconButton`, `NslPanel` (surface/raised/sunken), `NslBadge` (6 โทน), `NslProgressBar`, `NslEmptyState`
