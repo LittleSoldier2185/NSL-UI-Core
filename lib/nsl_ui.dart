@@ -17,6 +17,8 @@ export 'src/tokens/extensions.dart';
 export 'src/tokens/nsl_tokens.dart';
 export 'src/store/theme_controller.dart';
 export 'src/theme/adjust.dart';
+export 'src/theme/component_metrics.dart';
+export 'src/theme/nsl_theme.dart';
 export 'src/widgets/nsl_gallery.dart';
 export 'src/store/store_models.dart';
 export 'src/store/theme_storage.dart';
