@@ -11,6 +11,7 @@ import LyraMock from './mocks/LyraMock.vue';
 import NebularMock from './mocks/NebularMock.vue';
 import OrbitMock from './mocks/OrbitMock.vue';
 import SpectrumMock from './mocks/SpectrumMock.vue';
+import { mockText } from './mocks/mockText';
 
 /** app = หน้าตาโดยประมาณของแอปนั้น ; 'generic' = ตัวอย่างกลาง (widget มาตรฐานทั้งหมด) */
 const props = withDefaults(defineProps<{ tokens: NslTokens; title: string; app?: AppId | 'generic' }>(), { app: 'generic' });
@@ -42,36 +43,36 @@ const chips = computed(() =>
     <OrbitMock v-else-if="app === 'orbit'" :tokens="tokens" />
     <div v-else class="pv-body">
       <nav class="pv-side">
-        <div class="pv-row">รายการปกติ · Normal</div>
-        <div class="pv-row pv-hover">เมาส์ชี้ · Hover</div>
-        <div class="pv-row pv-selected">เลือกอยู่ · Selected</div>
-        <div class="pv-row pv-faint">ตัวอักษรจาง · Faint</div>
+        <div class="pv-row">{{ mockText.generic.normal }}</div>
+        <div class="pv-row pv-hover">{{ mockText.generic.hover }}</div>
+        <div class="pv-row pv-selected">{{ mockText.generic.selected }}</div>
+        <div class="pv-row pv-faint">{{ mockText.generic.faint }}</div>
       </nav>
       <main class="pv-main">
-        <h3>หัวข้อตัวอย่าง Sample heading</h3>
-        <p>ข้อความปกติบนพื้นแผง — The quick brown fox jumps over the lazy dog. สวัสดีชาวโลก</p>
-        <p class="pv-muted">ข้อความรอง (muted) สำหรับคำอธิบาย <span class="pv-link">ลิงก์สีเน้น</span></p>
-        <p class="pv-content">ข้อความเนื้อหา (ฟอนต์เนื้อหา) — บทที่ 1 ณ ริมทะเลที่ไม่มีใครรู้จัก</p>
+        <h3>{{ mockText.generic.heading }}</h3>
+        <p>{{ mockText.generic.body }}</p>
+        <p class="pv-muted">{{ mockText.generic.muted }} <span class="pv-link">{{ mockText.generic.link }}</span></p>
+        <p class="pv-content">{{ mockText.generic.content }}</p>
         <p class="pv-mono">const theme = "mono";</p>
         <div class="pv-actions">
-          <button class="pv-btn pv-primary" type="button">ปุ่มหลัก Primary</button>
-          <button class="pv-btn pv-tint" type="button">ปุ่มอ่อน Tint</button>
-          <button class="pv-btn pv-outline" type="button">กรอบ Outline</button>
-          <button class="pv-btn pv-border" type="button">เน้นขอบ Accent border</button>
+          <button class="pv-btn pv-primary" type="button">{{ mockText.generic.primary }}</button>
+          <button class="pv-btn pv-tint" type="button">{{ mockText.generic.tint }}</button>
+          <button class="pv-btn pv-outline" type="button">{{ mockText.generic.outline }}</button>
+          <button class="pv-btn pv-border" type="button">{{ mockText.generic.accentBorder }}</button>
         </div>
-        <input class="pv-input" type="text" value="ช่องกรอก Input" readonly aria-label="sample input" />
+        <input class="pv-input" type="text" :value="mockText.generic.input" readonly aria-label="sample input" />
         <div class="pv-alerts">
-          <span class="pv-alert pv-danger">ผิดพลาด Danger</span>
-          <span class="pv-alert pv-warn">เตือน Warning</span>
-          <span class="pv-alert pv-info">ข้อมูล Info</span>
-          <span class="pv-alert pv-success">สำเร็จ Success</span>
+          <span class="pv-alert pv-danger">{{ mockText.generic.danger }}</span>
+          <span class="pv-alert pv-warn">{{ mockText.generic.warn }}</span>
+          <span class="pv-alert pv-info">{{ mockText.generic.info }}</span>
+          <span class="pv-alert pv-success">{{ mockText.generic.success }}</span>
         </div>
         <div class="pv-chips" aria-label="categorical">
           <span v-for="c in chips" :key="c.id" class="pv-chip" :style="{ background: c.bg, color: c.fg }">{{ c.name }}</span>
         </div>
         <div class="pv-card">
-          <strong>การ์ด Card</strong>
-          <span class="pv-muted"> — พื้นยก (surfaceRaised) + เงา/ขอบตามธีม</span>
+          <strong>{{ mockText.generic.card }}</strong>
+          <span class="pv-muted">{{ mockText.generic.cardNote }}</span>
         </div>
       </main>
     </div>

@@ -4,6 +4,7 @@ import { toHex } from '../../core/color';
 import { accentPresets } from '../../core/presets';
 import { tintFor } from '../../core/tint';
 import type { NslTokens } from '../../core/tokens';
+import { mockText } from './mockText';
 
 // หน้าตาโดยประมาณของ Orbit (NSL Utility): การ์ดการเงิน + โดนัทตามหมวด + ตารางวันนี้ + แถบเมนูล่าง
 // ใช้เฉพาะสี core และชุด categorical (Orbit ยังไม่ได้ย้ายมาใช้ core — นี่คือหน้าตาที่คาดว่าจะเป็น)
@@ -31,13 +32,13 @@ const chips = computed(() =>
 <template>
   <div class="ap-orbit">
     <div class="hero">
-      <div class="hi">วันนี้ · 16 พ.ย.</div>
-      <div class="muted">ใช้ไปวันนี้</div>
+      <div class="hi">{{ mockText.orbit.today }}</div>
+      <div class="muted">{{ mockText.orbit.spentToday }}</div>
       <div class="big">฿ 482</div>
     </div>
     <div class="cards">
       <div class="oc">
-        <div class="cap">เดือนนี้</div>
+        <div class="cap">{{ mockText.orbit.thisMonth }}</div>
         <div class="split">
           <svg viewBox="0 0 36 36" class="donut" aria-hidden="true">
             <circle cx="18" cy="18" r="15.9155" fill="none" stroke="var(--c-surfaceSunken)" stroke-width="4" />
@@ -59,18 +60,18 @@ const chips = computed(() =>
             <span class="inc">+ ฿ 18,000</span>
             <span class="exp">− ฿ 9,640</span>
             <div class="budget" aria-hidden="true"><i></i></div>
-            <span class="muted">งบ 54%</span>
+            <span class="muted">{{ mockText.orbit.budget }}</span>
           </div>
         </div>
       </div>
       <div class="oc">
-        <div class="cap">ตารางวันนี้</div>
-        <div class="ev"><span class="t" :style="{ background: chips[0]!.bg, color: chips[0]!.fg }">09:00</span> ฟิสิกส์ 2</div>
-        <div class="ev"><span class="t" :style="{ background: chips[1]!.bg, color: chips[1]!.fg }">13:30</span> ส่งรายงาน</div>
+        <div class="cap">{{ mockText.orbit.schedule }}</div>
+        <div class="ev"><span class="t" :style="{ background: chips[0]!.bg, color: chips[0]!.fg }">09:00</span> {{ mockText.orbit.ev1 }}</div>
+        <div class="ev"><span class="t" :style="{ background: chips[1]!.bg, color: chips[1]!.fg }">13:30</span> {{ mockText.orbit.ev2 }}</div>
       </div>
     </div>
     <nav class="nav">
-      <span class="tab on"><i></i>หน้าหลัก</span><span class="tab"><i></i>การเงิน</span><span class="tab"><i></i>ตาราง</span><span class="tab"><i></i>เครื่องมือ</span>
+      <span v-for="(tb, i) in mockText.orbit.tabs" :key="tb" class="tab" :class="{ on: i === 0 }"><i></i>{{ tb }}</span>
     </nav>
   </div>
 </template>

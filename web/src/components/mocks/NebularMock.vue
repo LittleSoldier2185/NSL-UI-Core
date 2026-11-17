@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { toHex } from '../../core/color';
 import { onAccentFor } from '../../core/contrast';
 import type { NslTokens } from '../../core/tokens';
+import { mockText } from './mockText';
 
 // หน้าตาโดยประมาณของ Nebular (NSL Dev): แคนวาส ER — พื้นกระดาน, หัวตาราง, ป้าย PK/UQ/NN, แถว FK ที่ไฮไลต์
 const props = defineProps<{ tokens: NslTokens }>();
@@ -12,14 +13,18 @@ const headInk = computed(() => toHex(onAccentFor(props.tokens.extensions.nebular
 <template>
   <div class="ap-nebular" :style="{ '--head-ink': headInk }">
     <div class="tools">
-      <span class="tool on">เลือก</span><span class="tool">ตาราง</span><span class="tool">ความสัมพันธ์</span>
+      <span class="tool on">{{ mockText.nebular.select }}</span><span class="tool">{{ mockText.nebular.table }}</span><span class="tool">{{ mockText.nebular.relation }}</span>
       <span class="sp"></span><span class="muted">ER · schema.sql</span>
     </div>
     <div class="outside">
       <div class="canvas">
-        <svg class="links" viewBox="0 0 300 150" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M118 70 C 160 70, 150 40, 190 40" fill="none" stroke="var(--e-nebular-boardEdge)" stroke-width="2" />
+        <!-- เส้น FK : orders.user_id → users.id — วาดเฉพาะช่องว่างระหว่างสองตาราง แกนตั้งเป็นพิกเซลจริง (viewBox สูง = ผืนผ้าใบ 190)
+             แกนนอนยืดได้เพราะปลายอยู่ที่ขอบซ้าย/ขวาพอดี ; ความหนาเส้นไม่ยืดตาม (non-scaling-stroke) -->
+        <svg class="links" viewBox="0 0 100 190" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 56 C 50 56, 50 108, 100 108" fill="none" stroke="var(--e-nebular-boardEdge)" stroke-width="2" vector-effect="non-scaling-stroke" />
         </svg>
+        <span class="end e1" aria-hidden="true"></span>
+        <span class="end e2" aria-hidden="true"></span>
         <div class="tbl t1">
           <div class="th">users</div>
           <div class="tr"><span>id</span><i class="b pk">PK</i></div>
@@ -81,11 +86,31 @@ const headInk = computed(() => toHex(onAccentFor(props.tokens.extensions.nebular
   border-radius: var(--r-md);
   overflow: hidden;
 }
+/* ตำแหน่งตาราง/แถวตายตัว (px) เพื่อให้ปลายเส้นตรงแถว : หัว 28 + แถว 26 + เส้นขอบ 1
+   users.id กลางแถว = 14 + 1 + 28 + 13 = 56 ; orders.user_id = 40 + 1 + 28 + 26 + 13 = 108 */
 .links {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: 0;
+  left: 136px;
+  right: 136px;
+  height: 190px;
+  width: auto;
+  overflow: visible;
+}
+.end {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--e-nebular-boardEdge);
+}
+.e1 {
+  left: 133px;
+  top: 52.5px;
+}
+.e2 {
+  right: 133px;
+  top: 104.5px;
 }
 .tbl {
   position: absolute;
@@ -108,14 +133,22 @@ const headInk = computed(() => toHex(onAccentFor(props.tokens.extensions.nebular
 .th {
   background: var(--e-nebular-tableHead);
   color: var(--head-ink);
-  padding: 5px 8px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  box-sizing: border-box;
+  overflow: hidden;
   font-weight: 600;
 }
 .tr {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 8px;
+  height: 26px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  overflow: hidden;
   border-top: 1px solid var(--c-borderSoft);
 }
 .tr.fk {

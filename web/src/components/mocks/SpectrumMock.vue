@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { NslTokens } from '../../core/tokens';
+import { mockText } from './mockText';
 
 // หน้าตาโดยประมาณของ Spectrum (NSL Resonance): เครื่องเล่นมีเดีย — แผงไล่เฉด (panelBottom), แถบเลื่อน, ปุ่มเล่นสี accent
 defineProps<{ tokens: NslTokens }>();
-const tracks = ['Aurora Borealis', 'Midnight Signal', 'ท้องฟ้าหลังฝน', 'Low Orbit'];
 </script>
 
 <template>
@@ -11,8 +11,8 @@ const tracks = ['Aurora Borealis', 'Midnight Signal', 'ท้องฟ้าห�
     <div class="title"><span class="dot"></span> Spectrum <span class="sp"></span><span class="win">— □ ✕</span></div>
     <div class="body">
       <aside class="panel">
-        <div class="cap">รายการเล่น</div>
-        <div v-for="(t, i) in tracks" :key="t" class="row" :class="{ on: i === 1, hover: i === 2 }">
+        <div class="cap">{{ mockText.spectrum.playlist }}</div>
+        <div v-for="(t, i) in mockText.spectrum.tracks" :key="t" class="row" :class="{ on: i === 1, hover: i === 2 }">
           <span class="n">{{ i + 1 }}</span>{{ t }}
         </div>
       </aside>

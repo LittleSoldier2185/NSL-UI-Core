@@ -278,7 +278,7 @@ describe('เลือกแอป + พรีวิวเฉพาะแอป'
       [1, 'Midnight Signal'],
       [2, 'ไลรา วาเลน'],
       [3, '฿ 482'],
-      [4, 'Sample heading'],
+      [4, 'หัวข้อตัวอย่าง'],
     ];
     for (const [i, mark] of marks) {
       await tabs()[i]!.trigger('click');
@@ -461,5 +461,65 @@ describe('ธีมของหน้าเว็บ (สว่าง/มืด/
     expect(vars(forced)).toEqual(vars(media));
     expect(forced).toContain('color-scheme: dark');
     expect(css).toMatch(/:root\[data-theme='light'\] \{\s*color-scheme: light;/);
+  });
+});
+
+describe('พรีวิวตามภาษาของหน้าเว็บ + เส้นความสัมพันธ์ของ Nebular', () => {
+  const tabs = () => wrapper.findAll('.ptabs button');
+  // อักษรไทย (ยกเว้น ฿ ซึ่งเป็นสกุลเงินที่ Orbit ใช้จริง)
+  const thai = /[\u0E00-\u0E3E\u0E40-\u0E7F]/;
+
+  it('ภาษาอังกฤษ: พรีวิวทุกแอป (รวม "ทั่วไป") ไม่มีอักษรไทยค้าง', async () => {
+    await langSelect().setValue('en');
+    for (let i = 0; i < tabs().length; i++) {
+      await tabs()[i]!.trigger('click');
+      for (const pv of wrapper.findAll('section.pv')) {
+        const leftover = [...pv.text()].filter((ch) => thai.test(ch)).join('');
+        expect(leftover, tabs()[i]!.text()).toBe('');
+      }
+    }
+    await langSelect().setValue('th');
+  });
+
+  it('สลับภาษาแล้วข้อความในพรีวิวเปลี่ยนตาม (Nebular, Lyra, Orbit, Spectrum, ทั่วไป)', async () => {
+    const marks: [number, string, string][] = [
+      [0, 'ความสัมพันธ์', 'Relation'],
+      [1, 'รายการเล่น', 'Playlist'],
+      [2, 'ไลรา วาเลน', 'Lyra Valen'],
+      [3, 'ตารางวันนี้', "Today's schedule"],
+      [4, 'หัวข้อตัวอย่าง', 'Sample heading'],
+    ];
+    for (const [i, th, en] of marks) {
+      await tabs()[i]!.trigger('click');
+      expect(wrapper.get('section.pv').text(), th).toContain(th);
+      await langSelect().setValue('en');
+      expect(wrapper.get('section.pv').text(), en).toContain(en);
+      expect(wrapper.get('section.pv').text(), en).not.toContain(th);
+      await langSelect().setValue('th');
+    }
+  });
+
+  it('Nebular: ปลายเส้นอยู่ที่ขอบตารางและตรงกลางแถว users.id / orders.user_id (คำนวณจากขนาดใน CSS)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const src = readFileSync(resolve(__dirname, '../src/components/mocks/NebularMock.vue'), 'utf8');
+    const px = (re: RegExp) => Number(re.exec(src)![1]);
+    const head = px(/\.th \{[^}]*?height: (\d+)px/);
+    const row = px(/\.tr \{[^}]*?height: (\d+)px/);
+    const t1Left = px(/\.t1 \{[^}]*?left: (\d+)px/);
+    const t1Top = px(/\.t1 \{[^}]*?top: (\d+)px/);
+    const t2Top = px(/\.t2 \{[^}]*?top: (\d+)px/);
+    const t2Right = px(/\.t2 \{[^}]*?right: (\d+)px/);
+    const width = px(/\.tbl \{[^}]*?width: (\d+)px/);
+    const border = 1;
+    const usersId = t1Top + border + head + row / 2; // แถวแรกของ users
+    const ordersFk = t2Top + border + head + row + row / 2; // แถวที่สองของ orders
+    const d = /<path d="M0 ([\d.]+) C [^,]+, [^,]+, 100 ([\d.]+)"/.exec(src)!;
+    expect(Number(d[1])).toBe(usersId);
+    expect(Number(d[2])).toBe(ordersFk);
+    // เส้นวาดเฉพาะช่องว่างระหว่างตาราง : ซ้าย = ขอบขวาของ users, ขวา = ขอบซ้ายของ orders
+    expect(px(/\.links \{[^}]*?left: (\d+)px/)).toBe(t1Left + width);
+    expect(px(/\.links \{[^}]*?right: (\d+)px/)).toBe(t2Right + width);
+    expect(src).toContain('vector-effect="non-scaling-stroke"');
   });
 });

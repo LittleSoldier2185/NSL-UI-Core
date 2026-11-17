@@ -1,37 +1,31 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { NslTokens } from '../../core/tokens';
+import { mockText } from './mockText';
 
 // หน้าตาโดยประมาณของ Lyra (NSL Writer Tools): รายการโลกนิยาย — ป้ายประเภท 7 แบบ, ป้ายสถานะ, ข้อความเนื้อหา, กราฟความสัมพันธ์
 defineProps<{ tokens: NslTokens }>();
-const entries = [
-  { glyph: 'ค', type: 'Character', name: 'ไลรา วาเลน', status: 'Canon', on: true },
-  { glyph: 'ส', type: 'Place', name: 'หมู่เกาะเงาจันทร์', status: 'Draft' },
-  { glyph: 'อ', type: 'Org', name: 'สภาแห่งหมอก', status: 'Idea' },
-  { glyph: 'ห', type: 'Event', name: 'คืนพระจันทร์สีเลือด', status: 'Draft' },
-  { glyph: 'ไ', type: 'Item', name: 'เข็มทิศร้าว', status: 'Idea' },
-  { glyph: 'ก', type: 'Rule', name: 'กฎแห่งน้ำขึ้น', status: 'Canon' },
-  { glyph: 'ผ', type: 'Species', name: 'ชาวเงาน้ำ', status: 'Idea' },
-] as const;
+const entries = computed(() => mockText.value.lyra.entries.map((e, i) => ({ ...e, on: i === 0 })));
 </script>
 
 <template>
   <div class="ap-lyra">
-    <div class="bar"><strong>โลกของฉัน</strong><span class="sp"></span><span class="pill">+ รายการใหม่</span></div>
+    <div class="bar"><strong>{{ mockText.lyra.world }}</strong><span class="sp"></span><span class="pill">{{ mockText.lyra.newEntry }}</span></div>
     <div class="body">
       <nav class="list">
-        <div v-for="e in entries" :key="e.name" class="row" :class="{ on: 'on' in e }">
+        <div v-for="e in entries" :key="e.name" class="row" :class="{ on: e.on }">
           <span class="glyph" :class="`t-${e.type}`">{{ e.glyph }}</span>
           <span class="nm">{{ e.name }}</span>
           <span class="st" :class="`s-${e.status}`">{{ e.status }}</span>
         </div>
       </nav>
       <article class="detail">
-        <h3>ไลรา วาเลน</h3>
-        <p class="sum">นักเดินเรือผู้ไม่เคยเห็นฝั่ง แต่จำเสียงคลื่นได้ทุกลูก</p>
-        <p class="txt">ตอนเด็กเธอเคยฝันถึงเกาะที่ไม่อยู่ในแผนที่ ฝันนั้นกลับมาทุกครั้งที่น้ำลง…</p>
+        <h3>{{ entries[0]!.name }}</h3>
+        <p class="sum">{{ mockText.lyra.summary }}</p>
+        <p class="txt">{{ mockText.lyra.body }}</p>
         <div class="back">
-          <span class="muted">ลิงก์กลับ</span>
-          <span class="snip">“…ไลรา วาเลน ถือเข็มทิศร้าวเข้าสู่สภา…”</span>
+          <span class="muted">{{ mockText.lyra.backlinks }}</span>
+          <span class="snip">{{ mockText.lyra.snippet }}</span>
         </div>
         <svg class="graph" viewBox="0 0 200 70" aria-hidden="true">
           <line x1="40" y1="35" x2="100" y2="18" stroke="var(--e-lyra-edge)" stroke-width="1.5" />
