@@ -10,7 +10,7 @@ import 'package:flutter/material.dart' show Colors;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nsl_ui/nsl_ui.dart';
 
-import '../../NSL-Modeler/lib/ui/theme.dart' as dev;
+import '../../NSL-Nebular/lib/ui/theme.dart' as dev;
 
 void main() {
   tearDown(() => dev.C.use(dev.kLightPalette));

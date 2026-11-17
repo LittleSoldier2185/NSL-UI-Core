@@ -8,7 +8,7 @@ import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nsl_ui/nsl_ui.dart';
 
-import '../../NSL-Media-Player/lib/ui/theme.dart' as res;
+import '../../NSL-Spectrum/lib/ui/theme.dart' as res;
 
 void main() {
   final accents = <Color>[res.defaultAccent, ...res.accentPresets.map((e) => e.$2), const Color(0xFF0B1F3A), const Color(0xFFFFFFFF), const Color(0xFF000000)];
