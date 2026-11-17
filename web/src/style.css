@@ -953,6 +953,8 @@ select {
 }
 
 .toast {
+  position: relative;
+  overflow: hidden;
   display: flex;
   gap: 10px;
   align-items: flex-start;
@@ -972,8 +974,35 @@ select {
   background: #5c3d00;
 }
 
-.toast span {
+.toast .msg {
   flex: 1;
+}
+
+/* เส้นบอกเวลาที่เหลือ : เต็มความกว้างแล้วหดจนหมดใน 3 วินาที ; ชี้/โฟกัสอยู่ = หยุด (ตรงกับตัวนับเวลาจริง) */
+.toast .life {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.75);
+  transform-origin: left center;
+  animation-name: toast-life;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.toast.paused .life {
+  animation-play-state: paused;
+}
+
+@keyframes toast-life {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
 
 .toast .x {

@@ -14,6 +14,7 @@ import { type Brightness, schema } from './core/tokens';
 import { useEditor } from './editor';
 import { tokenElements } from './previewMap';
 import { type Key, lang, setLang, t } from './i18n';
+import { useToasts } from './toasts';
 import { type UiTheme, setUiTheme, uiTheme, uiThemes } from './uiTheme';
 
 /** ไอคอนจาก NSL Brand Pack (public/brand/<id>.svg) — path สัมพัทธ์ตาม base ของการ build */
@@ -278,10 +279,8 @@ onBeforeUnmount(() => {
 });
 
 // ── ข้อความแจ้ง (มุมบนขวา) : แสดง 3 อันล่าสุด ปิดทีละอันได้ ──
-const toasts = computed(() => ed.notices.value.map((n, i) => ({ ...n, i })).slice(-3));
-function dismiss(i: number) {
-  ed.notices.value.splice(i, 1);
-}
+// หายเองใน 3 วินาที มีเส้นเวลา ; ชี้/โฟกัสอยู่ = หยุดนับ
+const { toasts, paused, pause, resume, dismiss } = useToasts(ed.notices, { duration: 3000, max: 3 });
 
 // ── Undo / Redo ──
 function doUndo() {
@@ -748,9 +747,19 @@ onMounted(async () => {
     </div>
 
     <div class="toasts" aria-live="polite">
-      <div v-for="n in toasts" :key="n.i" class="toast" :class="n.kind">
-        <span>{{ n.text }}</span>
-        <button type="button" class="x" :aria-label="t('dismiss')" @click="dismiss(n.i)">×</button>
+      <div
+        v-for="n in toasts"
+        :key="n.id"
+        class="toast"
+        :class="[n.kind, { paused: paused.has(n.id) }]"
+        @mouseenter="pause(n.id)"
+        @mouseleave="resume(n.id)"
+        @focusin="pause(n.id)"
+        @focusout="resume(n.id)"
+      >
+        <span class="msg">{{ n.text }}</span>
+        <button type="button" class="x" :aria-label="t('dismiss')" @click="dismiss(n.id)">×</button>
+        <i class="life" :style="{ animationDuration: n.duration + 'ms' }" aria-hidden="true"></i>
       </div>
     </div>
   </div>
