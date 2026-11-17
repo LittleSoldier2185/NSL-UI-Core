@@ -28,6 +28,8 @@ export interface Editor {
   apps: Ref<AppId[]>;
   showAllExt: Ref<boolean>;
   toggleApp: (id: AppId) => void;
+  /** ตั้งแอปทั้งชุด (ว่าง = ไม่เปลี่ยน — ต้องเหลืออย่างน้อยหนึ่งแอป) */
+  setApps: (ids: readonly AppId[]) => void;
   setBase: (id: string) => void;
   visibleExtensions: ComputedRef<ReturnType<typeof extensionsFor>>;
   versionNotes: ComputedRef<ReturnType<typeof laterExtensions>>;
@@ -84,6 +86,14 @@ export function useEditor(): Editor {
     } else {
       apps.value = allAppIds.filter((a) => a === id || apps.value.includes(a));
     }
+    if (!baseTouched.value) draft.baseId = baseForApps(apps.value);
+  }
+
+  function setApps(ids: readonly AppId[]) {
+    const next = allAppIds.filter((a) => ids.includes(a));
+    if (next.length === 0) return;
+    appsGuessed.value = false;
+    apps.value = next;
     if (!baseTouched.value) draft.baseId = baseForApps(apps.value);
   }
 
@@ -237,7 +247,7 @@ export function useEditor(): Editor {
 
   const exportText = () => serializeNslt(draftToSpec({ ...draft, id: effectiveId.value, apps: exportApps() }));
 
-  return { draft, library, idAuto, apps, showAllExt, toggleApp, setBase, visibleExtensions, versionNotes, notices, baseChoices, views, effectiveId, exportProblems, exportText, setColor, setExt, setQuickAccent, setRadius, runAutoFix, resetAll, importFiles, say };
+  return { draft, library, idAuto, apps, showAllExt, toggleApp, setApps, setBase, visibleExtensions, versionNotes, notices, baseChoices, views, effectiveId, exportProblems, exportText, setColor, setExt, setQuickAccent, setRadius, runAutoFix, resetAll, importFiles, say };
 }
 
 export { parseHex, toHex };

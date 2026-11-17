@@ -9,6 +9,10 @@ const props = defineProps<{
   resolved: Color | undefined;
   /** ค่าที่ผู้ใช้ตั้งไว้เอง (undefined = สืบทอด/คำนวณ) */
   own: Color | undefined;
+  /** ชื่อที่คนอ่านเข้าใจ (ไม่มี = ใช้ label) */
+  name?: string;
+  /** ผลตรวจ contrast ที่แย่ที่สุดที่สีนี้เป็นตัวอักษร (ไม่มี = ไม่แสดง) */
+  check?: { ratio: number; min: number; passes: boolean; against: string };
 }>();
 const emit = defineEmits<{ set: [Color]; clear: [] }>();
 
@@ -38,7 +42,7 @@ function onPicker(e: Event) {
 
 <template>
   <div class="row" :class="{ own: own !== undefined }">
-    <label class="lbl">{{ label }}</label>
+    <span class="lbl"><b v-if="name && name !== label">{{ name }}</b> <span :class="{ key: name && name !== label }">{{ label }}</span></span>
     <input
       class="pick"
       type="color"
@@ -57,6 +61,8 @@ function onPicker(e: Event) {
       :aria-invalid="bad"
       @input="onText"
     />
+    <span v-if="check" class="ratio" :class="check.passes ? 'ok' : 'fail'" :title="`${check.ratio.toFixed(2)} : 1 / ${check.against} (≥ ${check.min})`">{{ check.ratio.toFixed(1) }} <span aria-hidden="true">{{ check.passes ? '✓' : '✕' }}</span><span class="sr">{{ check.passes ? t('pass') : t('failed') }}</span></span>
+    <span v-else></span>
     <button v-if="own !== undefined" class="clr" type="button" :title="t('clear')" @click="emit('clear')">↺</button>
     <span v-else class="inh" :title="t('inherited')">·</span>
   </div>
@@ -65,7 +71,7 @@ function onPicker(e: Event) {
 <style scoped>
 .row {
   display: grid;
-  grid-template-columns: minmax(96px, 1fr) 34px 92px 26px;
+  grid-template-columns: minmax(96px, 1fr) 34px 92px 54px 26px;
   align-items: center;
   gap: 8px;
   padding: 3px 0;
@@ -112,5 +118,30 @@ function onPicker(e: Event) {
   background: var(--panel);
   color: var(--ink);
   cursor: pointer;
+}
+</style>
+<style scoped>
+.key {
+  font: 11px ui-monospace, Consolas, monospace;
+  color: var(--muted);
+}
+.ratio {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+.ratio.ok {
+  color: var(--ok);
+}
+.ratio.fail {
+  color: var(--danger);
+}
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
 }
 </style>

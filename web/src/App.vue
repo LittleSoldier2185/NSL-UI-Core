@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { type AppId, appById, apps, areas } from './apps';
+import { type AppId, allAppIds, appById, apps, areas } from './apps';
+import { colorMatches, colorName } from './colorNames';
 import ColorRow from './components/ColorRow.vue';
 import ContrastPanel from './components/ContrastPanel.vue';
 import PreviewPane from './components/PreviewPane.vue';
-import { fromARGB32, parseHex, toHex6 } from './core/color';
+import { builtinSpecs, makeLookup } from './core/builtin';
+import { parseHex, toHex6 } from './core/color';
 import { accentPresets } from './core/presets';
+import { resolveTokens } from './core/resolve';
 import { kNslCoreVersion } from './core/spec';
 import { type Brightness, schema } from './core/tokens';
 import { useEditor } from './editor';
@@ -17,12 +20,30 @@ const brand = (name: string) => `${import.meta.env.BASE_URL}brand/${name}`;
 const ed = useEditor();
 const { draft } = ed;
 
-type Tab = 'colors' | 'ext' | 'shape' | 'style';
-const tab = ref<Tab>('colors');
+// ── ขั้นตอน (แถบซ้าย) ──
+type Step = 'start' | 'colors' | 'ext' | 'shape' | 'style' | 'check' | 'file';
+const mainSteps: Step[] = ['start', 'colors', 'ext', 'shape', 'style'];
+const step = ref<Step>('start');
+const stepTitle = (s: Step) => t(`step_${s}` as Key);
+function go(s: Step) {
+  step.value = s;
+}
+const nextStep = computed<Step | null>(() => {
+  const i = mainSteps.indexOf(step.value);
+  return i >= 0 && i < mainSteps.length - 1 ? mainSteps[i + 1]! : null;
+});
+
 const editMode = ref<Brightness>('light');
 const copied = ref(false);
 const quick = ref('#7B58D6');
 const versions = ref<string[]>([]);
+const modes: Brightness[] = ['light', 'dark'];
+const densities = ['compact', 'normal', 'comfortable'] as const;
+
+// ── พรีวิว ──
+type PMode = 'both' | Brightness;
+const previewMode = ref<PMode>('both');
+const shownModes = computed<Brightness[]>(() => (previewMode.value === 'both' ? modes : [previewMode.value]));
 const previewApp = ref<AppId | 'generic'>(ed.apps.value[0]!);
 const previewTabs = computed<(AppId | 'generic')[]>(() => [...ed.apps.value, 'generic']);
 watch(ed.apps, () => {
@@ -32,99 +53,168 @@ const appName = (id: AppId | 'generic') => (id === 'generic' ? t('generic') : ap
 const extAppName = (ext: string) => apps.find((a) => a.extension === ext)?.name ?? ext;
 const supportMark = { full: '✓', partial: '◐', none: '✕', unknown: '?' } as const;
 
-const groupOrder = ['surfaces', 'borders', 'text', 'accent', 'status', 'other'];
-const groups = computed(() =>
-  groupOrder
-    .map((g) => ({ id: g, label: t(`group_${g}` as Key), keys: schema.colors.filter((c) => c.group === g) }))
-    .filter((g) => g.keys.length > 0),
-);
+// ── ขั้น 1 : ธีมฐาน ──
+const baseDesc: Record<string, Key> = {
+  'nsl.default': 'bd_default',
+  'nsl.nebular': 'bd_nebular',
+  'nsl.spectrum': 'bd_spectrum',
+  'nsl.lyra.paper': 'bd_lyra',
+  'nsl.orbit': 'bd_orbit',
+};
+const baseCards = computed(() => {
+  const lookup = makeLookup(ed.library);
+  return ed.baseChoices.value.map((b) => {
+    const spec = b.builtin ? builtinSpecs[b.id] : ed.library[b.id];
+    let strip: string[] = [];
+    try {
+      if (spec) {
+        const c = resolveTokens(spec, 'light', lookup).colors;
+        strip = [c.bg, c.text, c.accent].filter((x) => x !== undefined).map((x) => toHex6(x));
+      }
+    } catch {
+      /* ธีมที่ resolve ไม่ได้ = ไม่มีแถบสี */
+    }
+    return { ...b, strip, desc: b.builtin && baseDesc[b.id] ? t(baseDesc[b.id]!) : t('base_user') };
+  });
+});
 
+// ── ขั้น 1 : แอป ──
+const allOn = computed(() => ed.apps.value.length === allAppIds.length);
+const lastSpecific = ref<AppId[]>([]);
+watch(
+  ed.apps,
+  (v) => {
+    if (v.length < allAppIds.length) lastSpecific.value = [...v];
+  },
+  { immediate: true },
+);
+function toggleAll() {
+  if (allOn.value) ed.setApps(lastSpecific.value.length > 0 ? lastSpecific.value : [allAppIds[0]!]);
+  else ed.setApps(allAppIds);
+}
+
+// ── ขั้น 1 : สีหลัก ──
+function applyQuick() {
+  const c = parseHex(quick.value);
+  if (c) {
+    ed.setQuickAccent(c);
+    ed.say('info', `${t('accentTitle')}: ${quick.value.toUpperCase()}`);
+  }
+}
+function presetQuick(light: string) {
+  quick.value = light;
+  applyQuick();
+}
+const isPicked = (hex: string) => quick.value.toUpperCase() === hex.toUpperCase();
+
+// ── ขั้น 2 : สี ──
+const search = ref('');
+const onlyOwn = ref(false);
+const groupOrder = ['surfaces', 'borders', 'text', 'accent', 'status', 'other'];
 const own = (key: string) => (editMode.value === 'light' ? draft.light : draft.dark)[key];
 const resolvedColor = (key: string) => ed.views.value[editMode.value].tokens?.colors[key];
 const ownExt = (ext: string, key: string) => (editMode.value === 'light' ? draft.extLight : draft.extDark)[ext]?.[key];
 const resolvedExt = (ext: string, key: string) => ed.views.value[editMode.value].tokens?.extensions[ext]?.[key];
+const groups = computed(() =>
+  groupOrder
+    .map((g) => ({
+      id: g,
+      label: t(`group_${g}` as Key),
+      total: schema.colors.filter((c) => c.group === g).length,
+      keys: schema.colors.filter((c) => c.group === g && colorMatches(c.key, search.value) && (!onlyOwn.value || own(c.key) !== undefined)),
+    }))
+    .filter((g) => g.keys.length > 0),
+);
+/** ผลตรวจที่แย่ที่สุดที่สีนี้เป็นตัวอักษร (ของโหมดที่กำลังแก้) */
+function worstCheck(key: string) {
+  const cs = ed.views.value[editMode.value].checks.filter((c) => c.fg === key);
+  if (cs.length === 0) return undefined;
+  const w = cs.reduce((a, b) => (b.passes === a.passes ? (b.ratio < a.ratio ? b : a) : b.passes ? a : b));
+  return { ratio: w.ratio, min: w.min, passes: w.passes, against: w.bg };
+}
+const groupFails = (keys: { key: string }[]) => keys.filter((k) => worstCheck(k.key)?.passes === false).length;
+const ownCount = computed(() => Object.keys(draft.light).length + Object.keys(draft.dark).length);
 
+// ── ตรวจ / ไฟล์ ──
+const failCount = computed(() => ed.views.value.light.failures.length + ed.views.value.dark.failures.length);
+const problems = computed(() => ed.exportProblems.value);
+
+function stepSub(s: Step): string {
+  switch (s) {
+    case 'start':
+      return t('sub_start');
+    case 'colors':
+      return t('sub_colors', { n: schema.colors.length, m: ownCount.value });
+    case 'ext':
+      return ed.visibleExtensions.value.length > 0 ? ed.visibleExtensions.value.map((e) => e.app).join(' · ') : t('sub_extNone');
+    case 'shape':
+      return t('sub_shape');
+    case 'style':
+      return `${t(draft.density ?? 'normal')} · ${t(draft.elevationMode === 'flat' ? 'flat' : 'shadow')}`;
+    case 'check':
+      return failCount.value === 0 ? t('sub_checkPass') : t('sub_checkFail', { n: failCount.value });
+    case 'file':
+      return t('sub_file');
+  }
+}
+
+// ── ค่าอื่น ๆ (เหมือนเดิม) ──
 function num(e: Event): number | null {
   const v = (e.target as HTMLInputElement).value;
   if (v.trim() === '') return null;
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
-
 function setText(field: 'family' | 'content' | 'mono', e: Event) {
   const v = (e.target as HTMLInputElement).value.trim();
   if (v === '') delete draft[field];
   else draft[field] = v;
 }
-
 function setScale(e: Event) {
   const n = num(e);
   if (n === null || Math.abs(n - schema.type.scale.default) < 1e-9) delete draft.scale;
   else draft.scale = n;
 }
-
 function setMinSize(e: Event) {
   const n = num(e);
   if (n === null) delete draft.minSize;
   else draft.minSize = Math.min(schema.type.minSize.max, Math.max(schema.type.minSize.min, n));
 }
-
 function setStrength(e: Event) {
   const n = num(e);
   if (n === null || Math.abs(n - schema.elevation.strength.default) < 1e-9) delete draft.elevationStrength;
   else draft.elevationStrength = n;
 }
-
 function setDensity(v: string) {
   if (v === 'normal') delete draft.density;
   else draft.density = v as 'compact' | 'comfortable';
 }
-
 function setElevation(v: string) {
   if (v === 'shadow') delete draft.elevationMode;
   else draft.elevationMode = v as 'flat';
 }
-
-function applyQuick() {
-  const c = parseHex(quick.value);
-  if (c) {
-    ed.setQuickAccent(c);
-    ed.say('info', `${t('quickAccent')}: ${quick.value.toUpperCase()}`);
-  }
-}
-
-function presetQuick(light: string) {
-  quick.value = light;
-  applyQuick();
-}
-
 function goVersion(e: Event) {
   const v = (e.target as HTMLSelectElement).value;
   if (/^\d{1,3}\.\d{1,3}$/.test(v)) window.location.href = `../v${v}/`;
 }
-
 function fix() {
   const n = ed.runAutoFix();
   ed.say('info', n > 0 ? t('autoFixed', { n }) : t('nothingToFix'));
 }
-
 async function readFiles(list: FileList | File[]) {
   const files = [...list].slice(0, 20);
   const read = await Promise.all(files.map(async (f) => ({ name: f.name, text: await f.text() })));
   ed.importFiles(read);
 }
-
 function onPick(e: Event) {
   const input = e.target as HTMLInputElement;
   if (input.files) void readFiles(input.files);
   input.value = '';
 }
-
 function onDrop(e: DragEvent) {
   e.preventDefault();
   if (e.dataTransfer?.files) void readFiles(e.dataTransfer.files);
 }
-
 function download() {
   const blob = new Blob([`${ed.exportText()}\n`], { type: 'application/json' });
   const a = document.createElement('a');
@@ -135,7 +225,6 @@ function download() {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
-
 async function copy() {
   try {
     await navigator.clipboard.writeText(`${ed.exportText()}\n`);
@@ -144,6 +233,12 @@ async function copy() {
   } catch {
     ed.say('warn', 'Clipboard unavailable — use Download');
   }
+}
+
+// ── ข้อความแจ้ง (มุมบนขวา) : แสดง 3 อันล่าสุด ปิดทีละอันได้ ──
+const toasts = computed(() => ed.notices.value.map((n, i) => ({ ...n, i })).slice(-3));
+function dismiss(i: number) {
+  ed.notices.value.splice(i, 1);
 }
 
 onMounted(async () => {
@@ -158,102 +253,232 @@ onMounted(async () => {
     /* ทำงานได้ปกติโดยไม่มีตัวสลับ */
   }
 });
-
-const modes: Brightness[] = ['light', 'dark'];
-const densities = ['compact', 'normal', 'comfortable'] as const;
 </script>
 
 <template>
-  <div class="app" @dragover.prevent @drop="onDrop">
+  <div class="shell" @dragover.prevent @drop="onDrop">
     <header class="top">
-      <div>
-        <h1 class="brandline"><img class="brandicon" :src="brand('palette.svg')" alt="" width="32" height="32" />{{ t('title') }}</h1>
-        <p class="sub">{{ t('subtitle') }}</p>
+      <div class="brandline">
+        <img class="brandicon" :src="brand('palette.svg')" alt="" width="30" height="30" />
+        <span class="brandname">{{ t('title') }}</span>
       </div>
-      <div class="top-right">
-        <span class="badge" :title="t('coreVersion')">core v{{ kNslCoreVersion }}</span>
-        <label v-if="versions.length > 1" class="ver">
-          {{ t('otherVersions') }}
-          <select @change="goVersion">
-            <option v-for="v in versions" :key="v" :value="v" :selected="v === kNslCoreVersion">v{{ v }}</option>
-          </select>
-        </label>
-        <label class="lang">
-          {{ t('language') }}
-          <select :value="lang" @change="(e) => setLang((e.target as HTMLSelectElement).value as 'th' | 'en')">
-            <option value="th">ไทย</option>
-            <option value="en">English</option>
-          </select>
-        </label>
-      </div>
+      <span class="divider" aria-hidden="true"></span>
+      <label class="namefield">
+        <span class="sr">{{ t('name') }}</span>
+        <input v-model="draft.name" type="text" maxlength="80" :placeholder="t('name')" />
+      </label>
+      <button class="filechip" type="button" :title="t('id')" @click="go('file')">{{ ed.effectiveId.value }}.nslt</button>
+      <span class="grow"></span>
+      <label class="btn dk">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" /></svg>
+        <span>{{ t('importShort') }}</span>
+        <input type="file" accept=".nslt,.json,application/json" multiple hidden @change="onPick" />
+      </label>
+      <button class="btn primary" type="button" :disabled="problems.length > 0" :title="problems.length > 0 ? t('problemsN', { n: problems.length }) : undefined" @click="download">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" /></svg>
+        <span>{{ t('download') }}</span>
+        <span v-if="problems.length > 0" class="count">{{ problems.length }}</span>
+      </button>
+      <label class="lang">
+        <span>{{ t('language') }}</span>
+        <select :value="lang" @change="(e) => setLang((e.target as HTMLSelectElement).value as 'th' | 'en')">
+          <option value="th">ไทย</option>
+          <option value="en">English</option>
+        </select>
+      </label>
     </header>
-    <p class="hint">{{ t('versionHint') }}</p>
 
     <div class="layout">
-      <aside class="controls">
-        <section class="card">
-          <h2>{{ t('theme') }}</h2>
-          <label class="f">
-            {{ t('name') }}
-            <input v-model="draft.name" type="text" maxlength="80" />
-          </label>
-          <label class="f">
-            {{ t('id') }}
-            <span class="inline">
-              <input
-                :value="ed.effectiveId.value"
-                type="text"
-                maxlength="64"
-                spellcheck="false"
-                :disabled="ed.idAuto.value"
-                @input="(e) => (draft.id = (e.target as HTMLInputElement).value)"
-              />
-              <label class="chk"><input v-model="ed.idAuto.value" type="checkbox" /> {{ t('idAuto') }}</label>
-            </span>
-          </label>
-          <label class="f">
-            {{ t('base') }}
-            <select :value="draft.baseId" @change="(e) => ed.setBase((e.target as HTMLSelectElement).value)">
-              <option v-for="b in ed.baseChoices.value" :key="b.id" :value="b.id">{{ b.name }} ({{ b.id }})</option>
+      <nav class="steps" :aria-label="t('steps')">
+        <button
+          v-for="(s, i) in mainSteps"
+          :key="s"
+          type="button"
+          class="step"
+          :data-step="s"
+          :class="{ on: step === s }"
+          :aria-current="step === s ? 'step' : undefined"
+          @click="go(s)"
+        >
+          <span class="n" aria-hidden="true">{{ i + 1 }}</span>
+          <span class="st"><b>{{ stepTitle(s) }}</b><span class="ss">{{ stepSub(s) }}</span></span>
+        </button>
+        <span class="sep" aria-hidden="true"></span>
+        <button type="button" class="step" data-step="check" :class="{ on: step === 'check' }" :aria-current="step === 'check' ? 'step' : undefined" @click="go('check')">
+          <svg v-if="failCount === 0" class="n ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m8 12 3 3 5-6" /></svg>
+          <svg v-else class="n ic bad" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 2 20h20L12 3z" /><path d="M12 10v4M12 17h.01" /></svg>
+          <span class="st"><b>{{ stepTitle('check') }}</b><span class="ss" :class="{ badtxt: failCount > 0 }">{{ stepSub('check') }}</span></span>
+        </button>
+        <button type="button" class="step" data-step="file" :class="{ on: step === 'file' }" :aria-current="step === 'file' ? 'step' : undefined" @click="go('file')">
+          <svg class="n ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 4 3 12l5 8M16 4l5 8-5 8" /></svg>
+          <span class="st"><b>{{ stepTitle('file') }}</b><span class="ss">{{ stepSub('file') }}</span></span>
+        </button>
+        <div class="navfoot">
+          <span class="badge" :title="t('versionHint')">core v{{ kNslCoreVersion }}</span>
+          <label v-if="versions.length > 1" class="ver">
+            {{ t('versionLabel') }}
+            <select @change="goVersion">
+              <option v-for="v in versions" :key="v" :value="v" :selected="v === kNslCoreVersion">v{{ v }}</option>
             </select>
           </label>
-          <div class="btns">
-            <label class="btn">
-              {{ t('importFiles') }}
-              <input type="file" accept=".nslt,.json,application/json" multiple hidden @change="onPick" />
-            </label>
-            <button class="btn" type="button" @click="ed.resetAll()">{{ t('reset') }}</button>
-          </div>
-          <p class="small">{{ t('importHint') }}</p>
-        </section>
+          <p class="small">{{ t('footer') }}</p>
+        </div>
+      </nav>
 
-        <section class="card">
-          <h2>{{ t('forApps') }}</h2>
-          <p class="small">{{ t('forAppsHint') }}</p>
-          <div class="appchips" role="group" :aria-label="t('forApps')">
-            <button
-              v-for="a in apps"
-              :key="a.id"
-              type="button"
-              class="appchip"
-              :class="{ on: ed.apps.value.includes(a.id) }"
-              :aria-pressed="ed.apps.value.includes(a.id)"
-              @click="ed.toggleApp(a.id)"
-            >
-              <img class="appicon" :src="brand(a.id + '.svg')" alt="" width="28" height="28" />
-              <strong>{{ a.name }}</strong>
-              <span>{{ a.product }}</span>
-            </button>
+      <main class="panel">
+        <!-- ── 1 เริ่มต้น ── -->
+        <template v-if="step === 'start'">
+          <div class="phead">
+            <h1>{{ stepTitle('start') }}</h1>
+            <p class="small">{{ t('startHint') }}</p>
           </div>
-          <ul class="statuses">
-            <li v-for="id in ed.apps.value" :key="id" :class="appById(id).status">
-              <strong>{{ appById(id).name }}</strong> — {{ t(appById(id).status === 'planned' ? 'status_planned' : 'status_experiment') }}
-            </li>
-          </ul>
-          <ul v-if="ed.versionNotes.value.length > 0" class="small notes">
-            <li v-for="e in ed.versionNotes.value" :key="e.name">{{ t('laterExt', { ext: e.name, app: extAppName(e.name), since: e.since }) }}</li>
-          </ul>
-          <details class="matrix">
+
+          <section class="card">
+            <h2>{{ t('baseTitle') }}</h2>
+            <p class="small">{{ t('baseHint') }}</p>
+            <div class="bases" role="radiogroup" :aria-label="t('baseTitle')">
+              <button
+                v-for="b in baseCards"
+                :key="b.id"
+                type="button"
+                role="radio"
+                class="base"
+                :class="{ on: draft.baseId === b.id }"
+                :aria-checked="draft.baseId === b.id"
+                :title="b.id"
+                @click="ed.setBase(b.id)"
+              >
+                <span class="strip" aria-hidden="true"><i v-for="(c, k) in b.strip" :key="k" :style="{ background: c }"></i></span>
+                <b>{{ b.name }}</b>
+                <span class="small">{{ b.desc }}</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="chead">
+              <div>
+                <h2>{{ t('appsTitle') }}</h2>
+                <p class="small">{{ t('appsHint') }}</p>
+              </div>
+              <label class="switch">
+                <span>{{ t('allApps') }}</span>
+                <input type="checkbox" role="switch" class="allapps" :checked="allOn" @change="toggleAll" />
+                <span class="track" aria-hidden="true"><span class="knob"></span></span>
+              </label>
+            </div>
+            <ul class="applist" :aria-label="t('appsTitle')">
+              <li v-for="a in apps" :key="a.id">
+                <label class="approw" :class="{ on: ed.apps.value.includes(a.id) }">
+                  <img class="appicon" :src="brand(a.id + '.svg')" alt="" width="36" height="36" />
+                  <span class="appname"><b>{{ a.name }}</b><span class="small">{{ t(`app_desc_${a.id}` as Key) }}</span></span>
+                  <span class="pill" :class="a.status" :title="t(a.status === 'planned' ? 'status_planned' : 'status_experiment')">{{ t(a.status === 'planned' ? 'status_short_planned' : 'status_short_experiment') }}</span>
+                  <input
+                    type="checkbox"
+                    class="appcheck"
+                    :checked="ed.apps.value.includes(a.id)"
+                    :disabled="ed.apps.value.length === 1 && ed.apps.value.includes(a.id)"
+                    :title="ed.apps.value.length === 1 && ed.apps.value.includes(a.id) ? t('lastApp') : undefined"
+                    @change="ed.toggleApp(a.id)"
+                  />
+                </label>
+              </li>
+            </ul>
+            <ul v-if="ed.versionNotes.value.length > 0" class="small notes">
+              <li v-for="e in ed.versionNotes.value" :key="e.name">{{ t('laterExt', { ext: e.name, app: extAppName(e.name), since: e.since }) }}</li>
+            </ul>
+          </section>
+
+          <section class="card">
+            <h2>{{ t('accentTitle') }}</h2>
+            <p class="small">{{ t('accentHint') }}</p>
+            <div class="swatches" role="group" :aria-label="t('presets')">
+              <button
+                v-for="p in accentPresets"
+                :key="p.id"
+                type="button"
+                class="sw"
+                :class="{ on: isPicked(toHex6(p.light[0])) }"
+                :aria-label="lang === 'th' ? p.nameTh : p.nameEn"
+                :aria-pressed="isPicked(toHex6(p.light[0]))"
+                :title="lang === 'th' ? p.nameTh : p.nameEn"
+                :style="{ background: toHex6(p.light[0]) }"
+                @click="presetQuick(toHex6(p.light[0]))"
+              ></button>
+              <span class="vsep" aria-hidden="true"></span>
+              <span class="custom">
+                <input v-model="quick" type="color" :aria-label="t('customColour')" />
+                <input v-model="quick" type="text" maxlength="7" class="mono" :aria-label="`${t('customColour')} hex`" />
+                <button class="btn" type="button" @click="applyQuick">{{ t('applyAccent') }}</button>
+              </span>
+            </div>
+          </section>
+        </template>
+
+        <!-- ── 2 สี ── -->
+        <template v-else-if="step === 'colors'">
+          <div class="phead row">
+            <div>
+              <h1>{{ stepTitle('colors') }}</h1>
+              <p class="small">{{ t('colorsHint') }}</p>
+            </div>
+            <div class="seg" role="group" :aria-label="t('editing')">
+              <button v-for="m in modes" :key="m" type="button" :class="{ on: editMode === m }" :aria-pressed="editMode === m" @click="editMode = m">{{ t(m) }}</button>
+            </div>
+          </div>
+          <div class="searchbar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+            <input v-model="search" type="search" :placeholder="t('searchColors')" :aria-label="t('searchColors')" />
+            <label class="chk"><input v-model="onlyOwn" type="checkbox" /> {{ t('onlyOwn') }}</label>
+          </div>
+          <p v-if="groups.length === 0" class="small">{{ t('noColorMatch') }}</p>
+          <fieldset v-for="g in groups" :key="g.id" class="grp card" :class="{ warn: groupFails(g.keys) > 0 }">
+            <legend class="sr">{{ g.label }}</legend>
+            <div class="chead">
+              <h2 aria-hidden="true">{{ g.label }}</h2>
+              <span v-if="groupFails(g.keys) > 0" class="pill planned">⚠ {{ t('hardToRead', { n: groupFails(g.keys) }) }}</span>
+              <span v-else class="small">{{ t('colorsInGroup', { n: g.total }) }}</span>
+            </div>
+            <ColorRow
+              v-for="c in g.keys"
+              :key="`${editMode}-${c.key}`"
+              :label="c.key"
+              :name="colorName(c.key, lang)"
+              :check="worstCheck(c.key)"
+              :resolved="resolvedColor(c.key)"
+              :own="own(c.key)"
+              @set="(col) => ed.setColor(editMode, c.key, col)"
+              @clear="ed.setColor(editMode, c.key, null)"
+            />
+          </fieldset>
+        </template>
+
+        <!-- ── 3 สีเฉพาะแอป ── -->
+        <template v-else-if="step === 'ext'">
+          <div class="phead row">
+            <div>
+              <h1>{{ stepTitle('ext') }}</h1>
+              <p class="small">{{ t('extTitleHint') }}</p>
+            </div>
+            <div class="seg" role="group" :aria-label="t('editing')">
+              <button v-for="m in modes" :key="m" type="button" :class="{ on: editMode === m }" :aria-pressed="editMode === m" @click="editMode = m">{{ t(m) }}</button>
+            </div>
+          </div>
+          <label class="chk"><input v-model="ed.showAllExt.value" type="checkbox" /> {{ t('showOtherExt') }}</label>
+          <p v-if="ed.visibleExtensions.value.length === 0" class="small">{{ t('extOrbit') }}</p>
+          <fieldset v-for="e in ed.visibleExtensions.value" :key="e.name" class="grp card">
+            <legend>{{ e.app }} · <code>{{ e.name }}</code> · core ≥ {{ e.since }}</legend>
+            <ColorRow
+              v-for="k in e.keys"
+              :key="`${editMode}-${e.name}-${k}`"
+              :label="k"
+              :resolved="resolvedExt(e.name, k)"
+              :own="ownExt(e.name, k)"
+              @set="(col) => ed.setExt(editMode, e.name, k, col)"
+              @clear="ed.setExt(editMode, e.name, k, null)"
+            />
+          </fieldset>
+          <details class="matrix card">
             <summary>{{ t('supportTitle') }}</summary>
             <div class="tblwrap">
               <table>
@@ -277,183 +502,157 @@ const densities = ['compact', 'normal', 'comfortable'] as const;
             <p class="small legend">✓ {{ t('sup_full') }} · ◐ {{ t('sup_partial') }} · ✕ {{ t('sup_none') }} · ? {{ t('sup_unknown') }}</p>
             <p class="small">{{ t('supportNote') }}</p>
           </details>
-        </section>
+        </template>
 
-        <section class="card">
-          <h2>{{ t('quickAccent') }}</h2>
-          <p class="small">{{ t('quickAccentHint') }}</p>
-          <div class="swatches" role="group" :aria-label="t('presets')">
-            <button
-              v-for="p in accentPresets"
-              :key="p.id"
-              type="button"
-              class="sw"
-              :title="lang === 'th' ? p.nameTh : p.nameEn"
-              :style="{ background: toHex6(p.light[0]) }"
-              @click="presetQuick(toHex6(p.light[0]))"
-            ></button>
-          </div>
-          <div class="inline">
-            <input v-model="quick" type="color" :aria-label="t('customColour')" />
-            <input v-model="quick" type="text" maxlength="7" class="mono" :aria-label="t('customColour')" />
-            <button class="btn" type="button" @click="applyQuick">{{ t('applyAccent') }}</button>
-          </div>
-        </section>
-
-        <section class="card">
-          <div class="tabs" role="tablist">
-            <button v-for="k in (['colors', 'ext', 'shape', 'style'] as Tab[])" :key="k" role="tab" :aria-selected="tab === k" :class="{ on: tab === k }" type="button" @click="tab = k">
-              {{ t(({ colors: 'tabColors', ext: 'tabExt', shape: 'tabShape', style: 'tabStyle' } as Record<Tab, Key>)[k]) }}
-            </button>
-          </div>
-
-          <div v-if="tab === 'colors' || tab === 'ext'" class="modebar">
-            <span>{{ t('editing') }}</span>
-            <button v-for="m in modes" :key="m" type="button" :class="{ on: editMode === m }" @click="editMode = m">{{ t(m) }}</button>
-          </div>
-
-          <div v-if="tab === 'colors'">
-            <fieldset v-for="g in groups" :key="g.id" class="grp">
-              <legend>{{ g.label }}</legend>
-              <ColorRow
-                v-for="c in g.keys"
-                :key="`${editMode}-${c.key}`"
-                :label="c.key"
-                :resolved="resolvedColor(c.key)"
-                :own="own(c.key)"
-                @set="(col) => ed.setColor(editMode, c.key, col)"
-                @clear="ed.setColor(editMode, c.key, null)"
+        <!-- ── 4 รูปทรงและตัวอักษร ── -->
+        <template v-else-if="step === 'shape'">
+          <div class="phead"><h1>{{ stepTitle('shape') }}</h1></div>
+          <fieldset class="grp card">
+            <legend>{{ t('radius') }}</legend>
+            <label v-for="k in schema.shape.radius.keys" :key="k" class="num">
+              <span>{{ k }}</span>
+              <input
+                type="number"
+                :min="schema.shape.radius.min"
+                :max="schema.shape.radius.max"
+                step="1"
+                :placeholder="String(schema.shape.radius.default[k])"
+                :value="draft.radius[k] ?? ''"
+                @input="(e) => ed.setRadius(k, num(e))"
               />
-            </fieldset>
-          </div>
+            </label>
+          </fieldset>
+          <fieldset class="grp card">
+            <legend>{{ t('fontFamily') }}</legend>
+            <label class="f">{{ t('fontFamily') }}<input type="text" maxlength="64" :value="draft.family ?? ''" placeholder="Noto Sans Thai" @input="(e) => setText('family', e)" /></label>
+            <label class="f">{{ t('fontContent') }}<input type="text" maxlength="64" :value="draft.content ?? ''" @input="(e) => setText('content', e)" /></label>
+            <label class="f">{{ t('fontMono') }}<input type="text" maxlength="64" :value="draft.mono ?? ''" @input="(e) => setText('mono', e)" /></label>
+            <p class="small">{{ t('fontHint') }}</p>
+            <label class="num">
+              <span>{{ t('scale') }} ({{ (draft.scale ?? schema.type.scale.default).toFixed(2) }})</span>
+              <input type="range" :min="schema.type.scale.min" :max="schema.type.scale.max" step="0.05" :value="draft.scale ?? schema.type.scale.default" @input="setScale" />
+            </label>
+            <label class="num">
+              <span>{{ t('minSize') }}</span>
+              <input type="number" :min="schema.type.minSize.min" :max="schema.type.minSize.max" step="1" :value="draft.minSize ?? ''" placeholder="—" @input="setMinSize" />
+            </label>
+          </fieldset>
+        </template>
 
-          <div v-else-if="tab === 'ext'">
-            <p class="small">{{ t('extHint') }}</p>
-            <label class="chk"><input v-model="ed.showAllExt.value" type="checkbox" /> {{ t('showOtherExt') }}</label>
-            <p v-if="ed.visibleExtensions.value.length === 0" class="small">{{ t('extOrbit') }}</p>
-            <fieldset v-for="e in ed.visibleExtensions.value" :key="e.name" class="grp">
-              <legend>{{ e.app }} · <code>{{ e.name }}</code> · core ≥ {{ e.since }}</legend>
-              <ColorRow
-                v-for="k in e.keys"
-                :key="`${editMode}-${e.name}-${k}`"
-                :label="k"
-                :resolved="resolvedExt(e.name, k)"
-                :own="ownExt(e.name, k)"
-                @set="(col) => ed.setExt(editMode, e.name, k, col)"
-                @clear="ed.setExt(editMode, e.name, k, null)"
-              />
-            </fieldset>
-          </div>
+        <!-- ── 5 ความหนาแน่นและเงา ── -->
+        <template v-else-if="step === 'style'">
+          <div class="phead"><h1>{{ stepTitle('style') }}</h1></div>
+          <fieldset class="grp card">
+            <legend>{{ t('density') }}</legend>
+            <label v-for="d in densities" :key="d" class="chk">
+              <input type="radio" name="density" :checked="(draft.density ?? 'normal') === d" @change="setDensity(d)" /> {{ t(d) }}
+            </label>
+            <p class="small">{{ t('densityHint') }}</p>
+          </fieldset>
+          <fieldset class="grp card">
+            <legend>{{ t('elevationMode') }}</legend>
+            <label class="chk"><input type="radio" name="elev" :checked="(draft.elevationMode ?? 'shadow') === 'shadow'" @change="setElevation('shadow')" /> {{ t('shadow') }}</label>
+            <label class="chk"><input type="radio" name="elev" :checked="draft.elevationMode === 'flat'" @change="setElevation('flat')" /> {{ t('flat') }}</label>
+            <label class="num">
+              <span>{{ t('strength') }} ({{ (draft.elevationStrength ?? schema.elevation.strength.default).toFixed(2) }})</span>
+              <input type="range" :min="schema.elevation.strength.min" :max="schema.elevation.strength.max" step="0.05" :value="draft.elevationStrength ?? schema.elevation.strength.default" @input="setStrength" />
+            </label>
+          </fieldset>
+        </template>
 
-          <div v-else-if="tab === 'shape'">
-            <fieldset class="grp">
-              <legend>{{ t('radius') }}</legend>
-              <label v-for="k in schema.shape.radius.keys" :key="k" class="num">
-                <span>{{ k }}</span>
-                <input
-                  type="number"
-                  :min="schema.shape.radius.min"
-                  :max="schema.shape.radius.max"
-                  step="1"
-                  :placeholder="String(schema.shape.radius.default[k])"
-                  :value="draft.radius[k] ?? ''"
-                  @input="(e) => ed.setRadius(k, num(e))"
-                />
-              </label>
-            </fieldset>
-            <fieldset class="grp">
-              <legend>{{ t('fontFamily') }}</legend>
-              <label class="f">{{ t('fontFamily') }}<input type="text" maxlength="64" :value="draft.family ?? ''" placeholder="Noto Sans Thai" @input="(e) => setText('family', e)" /></label>
-              <label class="f">{{ t('fontContent') }}<input type="text" maxlength="64" :value="draft.content ?? ''" @input="(e) => setText('content', e)" /></label>
-              <label class="f">{{ t('fontMono') }}<input type="text" maxlength="64" :value="draft.mono ?? ''" @input="(e) => setText('mono', e)" /></label>
-              <p class="small">{{ t('fontHint') }}</p>
-              <label class="num">
-                <span>{{ t('scale') }} ({{ (draft.scale ?? schema.type.scale.default).toFixed(2) }})</span>
-                <input type="range" :min="schema.type.scale.min" :max="schema.type.scale.max" step="0.05" :value="draft.scale ?? schema.type.scale.default" @input="setScale" />
-              </label>
-              <label class="num">
-                <span>{{ t('minSize') }}</span>
-                <input type="number" :min="schema.type.minSize.min" :max="schema.type.minSize.max" step="1" :value="draft.minSize ?? ''" placeholder="—" @input="setMinSize" />
-              </label>
-            </fieldset>
-          </div>
-
-          <div v-else>
-            <fieldset class="grp">
-              <legend>{{ t('density') }}</legend>
-              <label v-for="d in densities" :key="d" class="chk">
-                <input type="radio" name="density" :checked="(draft.density ?? 'normal') === d" @change="setDensity(d)" /> {{ t(d) }}
-              </label>
-              <p class="small">{{ t('densityHint') }}</p>
-            </fieldset>
-            <fieldset class="grp">
-              <legend>{{ t('elevationMode') }}</legend>
-              <label class="chk"><input type="radio" name="elev" :checked="(draft.elevationMode ?? 'shadow') === 'shadow'" @change="setElevation('shadow')" /> {{ t('shadow') }}</label>
-              <label class="chk"><input type="radio" name="elev" :checked="draft.elevationMode === 'flat'" @change="setElevation('flat')" /> {{ t('flat') }}</label>
-              <label class="num">
-                <span>{{ t('strength') }} ({{ (draft.elevationStrength ?? schema.elevation.strength.default).toFixed(2) }})</span>
-                <input type="range" :min="schema.elevation.strength.min" :max="schema.elevation.strength.max" step="0.05" :value="draft.elevationStrength ?? schema.elevation.strength.default" @input="setStrength" />
-              </label>
-            </fieldset>
-          </div>
-        </section>
-      </aside>
-
-      <main class="output">
-        <section class="card">
-          <h2>{{ t('preview') }}</h2>
-          <p class="small">{{ t('previewNote') }}</p>
-          <div class="ptabs" role="tablist" :aria-label="t('previewFor')">
-            <span class="small">{{ t('previewFor') }}</span>
-            <button v-for="id in previewTabs" :key="id" type="button" role="tab" :aria-selected="previewApp === id" :class="{ on: previewApp === id }" @click="previewApp = id">
-              {{ appName(id) }}
-            </button>
-          </div>
-          <div class="previews">
-            <template v-for="m in modes" :key="m">
-              <PreviewPane v-if="ed.views.value[m].tokens" :tokens="ed.views.value[m].tokens!" :title="t(m)" :app="previewApp" />
-              <p v-else class="err">{{ t(m) }}: {{ t('cannotResolve') }} {{ ed.views.value[m].error }}</p>
-            </template>
-          </div>
-        </section>
-
-        <section class="card">
-          <div class="head">
-            <h2>{{ t('contrast') }}</h2>
-            <button class="btn" type="button" @click="fix">{{ t('autoFix') }}</button>
+        <!-- ── ตรวจความอ่านง่าย ── -->
+        <template v-else-if="step === 'check'">
+          <div class="phead row">
+            <div>
+              <h1>{{ t('contrast') }}</h1>
+              <p class="small">{{ t('checkHint') }}</p>
+            </div>
+            <button class="btn primary" type="button" @click="fix">{{ t('autoFix') }}</button>
           </div>
           <div class="cps">
-            <ContrastPanel v-for="m in modes" :key="m" :title="t(m)" :view="ed.views.value[m]" />
+            <ContrastPanel v-for="m in modes" :key="m" class="card" :title="t(m)" :view="ed.views.value[m]" />
           </div>
-        </section>
+        </template>
 
-        <section class="card">
-          <div class="head">
-            <h2>.nslt</h2>
+        <!-- ── ไฟล์ ── -->
+        <template v-else>
+          <div class="phead row">
+            <div>
+              <h1>{{ t('fileTitle') }}</h1>
+              <p class="small">{{ t('fileHint') }}</p>
+            </div>
             <div class="btns">
-              <button class="btn primary" type="button" :disabled="ed.exportProblems.value.length > 0" @click="download">{{ t('download') }}</button>
-              <button class="btn" type="button" :disabled="ed.exportProblems.value.length > 0" @click="copy">{{ copied ? t('copied') : t('copy') }}</button>
+              <button class="btn" type="button" :disabled="problems.length > 0" @click="copy">{{ copied ? t('copied') : t('copy') }}</button>
             </div>
           </div>
-          <ul v-if="ed.exportProblems.value.length > 0" class="problems">
-            <li v-for="p in ed.exportProblems.value" :key="p">{{ p }}</li>
-          </ul>
-          <pre class="code" tabindex="0">{{ ed.exportText() }}</pre>
-          <h3 class="how">{{ t('howToUse') }}</h3>
-          <ul class="small">
-            <li>{{ t('howWindows') }}</li>
-            <li>{{ t('howAndroid') }}</li>
-          </ul>
-        </section>
+          <section class="card">
+            <label class="f">
+              {{ t('id') }}
+              <span class="inline">
+                <input
+                  :value="ed.effectiveId.value"
+                  type="text"
+                  maxlength="64"
+                  spellcheck="false"
+                  :disabled="ed.idAuto.value"
+                  @input="(e) => (draft.id = (e.target as HTMLInputElement).value)"
+                />
+                <label class="chk"><input v-model="ed.idAuto.value" type="checkbox" /> {{ t('idAuto') }}</label>
+              </span>
+            </label>
+            <ul v-if="problems.length > 0" class="problems">
+              <li v-for="p in problems" :key="p">{{ p }}</li>
+            </ul>
+          </section>
+          <pre class="code card" tabindex="0">{{ ed.exportText() }}</pre>
+          <section class="card">
+            <h3 class="how">{{ t('howToUse') }}</h3>
+            <ul class="small">
+              <li>{{ t('howWindows') }}</li>
+              <li>{{ t('howAndroid') }}</li>
+            </ul>
+            <div class="btns">
+              <button class="btn" type="button" @click="ed.resetAll()">{{ t('reset') }}</button>
+            </div>
+            <p class="small">{{ t('importHint') }}</p>
+          </section>
+        </template>
 
-        <section v-if="ed.notices.value.length > 0" class="card" aria-live="polite">
-          <h2>{{ t('notices') }}</h2>
-          <ul class="notices">
-            <li v-for="(n, i) in ed.notices.value" :key="i" :class="n.kind">{{ n.text }}</li>
-          </ul>
-        </section>
+        <div v-if="nextStep" class="nextrow">
+          <button class="btn" type="button" @click="go(nextStep)">{{ t('next', { step: stepTitle(nextStep) }) }}</button>
+        </div>
       </main>
+
+      <aside class="preview" :aria-label="t('preview')">
+        <div class="pbar">
+          <div class="ptabs seg" role="tablist" :aria-label="t('previewFor')">
+            <button v-for="id in previewTabs" :key="id" type="button" role="tab" :aria-selected="previewApp === id" :class="{ on: previewApp === id }" @click="previewApp = id">
+              <img v-if="id !== 'generic'" :src="brand(id + '.svg')" alt="" width="16" height="16" />{{ appName(id) }}
+            </button>
+          </div>
+          <div class="seg" role="group" :aria-label="t('previewMode')">
+            <button v-for="m in (['light', 'dark', 'both'] as PMode[])" :key="m" type="button" :class="{ on: previewMode === m }" :aria-pressed="previewMode === m" @click="previewMode = m">{{ t(m) }}</button>
+          </div>
+        </div>
+        <div class="previews">
+          <template v-for="m in shownModes" :key="m">
+            <PreviewPane v-if="ed.views.value[m].tokens" :tokens="ed.views.value[m].tokens!" :title="t(m)" :app="previewApp" />
+            <p v-else class="err">{{ t(m) }}: {{ t('cannotResolve') }} {{ ed.views.value[m].error }}</p>
+          </template>
+        </div>
+        <p class="small">{{ t('previewNote') }}</p>
+        <button type="button" class="summary" :class="{ bad: failCount > 0 }" @click="go('check')">
+          <span>{{ failCount === 0 ? '✓ ' + t('summaryPass') : '⚠ ' + t('summaryFail', { n: failCount }) }}</span>
+          <span class="link">{{ t('details') }}</span>
+        </button>
+      </aside>
     </div>
-    <footer class="foot">{{ t('footer') }}</footer>
+
+    <div class="toasts" aria-live="polite">
+      <div v-for="n in toasts" :key="n.i" class="toast" :class="n.kind">
+        <span>{{ n.text }}</span>
+        <button type="button" class="x" :aria-label="t('dismiss')" @click="dismiss(n.i)">×</button>
+      </div>
+    </div>
   </div>
 </template>
