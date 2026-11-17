@@ -183,6 +183,11 @@
 - [ ] **เฟส 11** ย้าย Utility ในสำเนา: adapter ก่อน แล้วย้ายสีฮาร์ดโค้ดทีละหน้า
 - [ ] **เฟส 12** งานค้าง Dev/Resonance: UI เลือกธีม, นำเข้า-ส่งออก, safe mode, ย้าย radius/fontSize
 - **Branding (2026-11-16):** เว็บ = **NSL Palette** ; แอป: Utility→Orbit, Dev→Nebular, Resonance→Spectrum, Writer Tools→Lyra (ชื่อที่ผู้ใช้เห็นเท่านั้น โฟลเดอร์/โค้ดภายในไม่เปลี่ยน) ; **id ภายใน (ทำแล้ว 2026-11-16):** เปลี่ยนตรง ๆ ไม่มี alias เพราะยังไม่ปล่อยทางการ — `nsl.dev`→`nsl.nebular`, `nsl.resonance`→`nsl.spectrum`, extension `dev`→`nebular`, `resonance`→`spectrum` ใน `nsl_ui` + `dev_copy` + `resonance_copy` ; เทสต์หลังเปลี่ยน: `nsl_ui` 95 ผ่าน, Resonance copy 287 ผ่าน, Dev copy 1,286 ผ่าน ; ธีมที่ tester สร้างด้วย id เก่าต้องสร้างใหม่ (ลบ `%APPDATA%\NSL\themes` + `ui-settings.json`) ; ชื่อ Dart (`kBuiltinDevId` ฯลฯ) ยังเป็นเดิม ; ข้อความเก่าในไฟล์นี้ที่อ้าง `nsl.dev`/`nsl.resonance` เป็นบันทึกประวัติ — ดู `Plan.md` 9.6
+- [ ] **เฟส 13** ชุด component กลาง — รากฐาน: `NslTheme`/`context.nsl` + fallback, เทสต์ guard (ห้ามสี/มุมโค้งฮาร์ดโค้ด) *(Must)*
+- [ ] **เฟส 14** `NslButton`, `NslIconButton`, `NslPanel`, `NslBadge` + เทสต์ + Gallery *(Must)*
+- [ ] **เฟส 15** `NslProgressBar`, `NslEmptyState` + Gallery + เวอร์ชัน 1.2.0/CHANGELOG/README *(Should)*
+- (ภายหลัง) `NslSegmented`, `NslKbd` *(Nice — รอแอปที่สองใช้)*
+- **เหตุผลเฟส 13–15 (2026-11-17):** ผู้ใช้ต้องการคุมหน้าตา UI ของทุก product ให้ไปทางเดียวกันถึงระดับ component ; สำรวจโค้ดจริงพบ Panel/Button/Badge/IconButton/Progress/EmptyState ถูกเขียนซ้ำในหลายแอป ; ขอบเขตและสิ่งที่เลี่ยงอยู่ใน `Plan.md` 9.8 (เพิ่มอย่างเดียว ไม่แตะแอปจริง/สำเนา/Launcher ไม่เพิ่ม dependency)
 - เฟส 6 (editor ใน Dev) ถูกแทนที่ด้วยเฟส 10 ; editor ใน `dev_copy` คงไว้เป็นต้นแบบ
 
 ## ข้อค้นพบระหว่างทำ

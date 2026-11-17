@@ -318,3 +318,38 @@ elevation.strength: 0.0 – 1.5            # คูณความเข้ม�
 - ไม่ต้อง migration จาก `%APPDATA%\NSL\themes` (แอปยังไม่ปล่อย มีแต่ tester — ธีมที่ tester สร้างไว้ต้องย้ายเอง)
 - **สิ่งที่ Launcher ทำได้ในอนาคต (ยังไม่ทำ):** รู้เวอร์ชัน core ของแต่ละแอปที่ติดตั้ง → เตือนว่าธีมใช้ส่วนขยายที่แอปบางตัวยังไม่รู้จัก และเปิดเว็บ Palette รุ่นที่ตรงให้
 - **ยังไม่ได้ทดสอบ:** Documents ที่ย้ายไป OneDrive (Known Folder Move / Files On-Demand) กับตัวเฝ้าโฟลเดอร์ · พฤติกรรม `getApplicationDocumentsDirectory()` บน Windows ที่ย้ายโฟลเดอร์ (ตามเอกสารของ plugin อ่านจาก Known Folder แต่ยังไม่ได้ลองบนเครื่องนี้) · การทำงานจริงของ `main()` ในสำเนา (เทสต์ครอบคลุม store/ตัวควบคุม ไม่ได้บูตแอปด้วย path_provider จริง)
+
+### 9.8 ชุด component กลาง (2026-11-17) — core 1.2 (เพิ่มอย่างเดียว)
+**ที่มา:** ผู้ใช้ถามว่าควรทำ component แบบ Bootstrap/Tailwind หรือไม่ → ตัดสินใจ: **ทำชุด widget เล็ก ๆ แบบ Bootstrap เฉพาะตัวที่ซ้ำกันจริง ไม่ทำ utility class แบบ Tailwind** (Flutter ไม่มี class ; ส่วนที่ใกล้เคียงคือ token + `context.nsl` ซึ่งมีอยู่แล้ว) ; ผู้ใช้สั่ง "อะไรที่ควรมีก็ทำ อะไรที่เสี่ยงก็เลี่ยง"
+
+**ผลสำรวจโค้ดจริง (2026-11-17):** บทบาทเดียวกันถูกเขียนซ้ำในแต่ละแอป หน้าตาและวิธีอ่านสีต่างกัน (Launcher `context.lt`, Orbit ค่าคงที่ global, Nebular `C` static)
+
+| component | ที่ซ้ำอยู่ตอนนี้ | ตัดสินใจ |
+|---|---|---|
+| `NslButton` (primary/secondary/danger/ghost) | Launcher `LButton`, Orbit `Btn`, Nebular `SmallButton` | **ทำ** |
+| `NslIconButton` | Nebular `_IconBtn`, Spectrum `IconBtn` | **ทำ** |
+| `NslPanel` | Launcher `Panel`, Orbit `Panel` | **ทำ** |
+| `NslBadge` (tone: neutral/success/info/warn/danger/accent) | Launcher `StatusChip`, Lyra `StatusBadge`, Nebular `_IssueBadge`/`Chip2`, Spectrum `_Badge` | **ทำ** |
+| `NslProgressBar` | Launcher `LProgress`, Orbit `_Progress`/`_MiniProgress` | **ทำ** |
+| `NslEmptyState` | Lyra `NoSelection`, Spectrum `_EmptyState`/`_EmptyCard` | **ทำ** |
+| `NslSegmented` | Orbit `Seg` (พบแอปเดียว) | ทำทีหลัง ถ้ามีแอปที่สองใช้ |
+| `NslKbd` (ปุ่มลัดแป้นพิมพ์) | Spectrum `KeyCap`/`_Kbd` | ทำทีหลัง (nice) |
+
+**เลี่ยง (เสี่ยง/ไม่คุ้ม) — ห้ามทำในเฟสนี้:**
+- title bar / `WindowControls` / ปุ่มหน้าต่าง (ผูก window backend ของแต่ละแพลตฟอร์ม) · `PanelSplitter`/`SplitPane`/แคนวาส/slider ที่วาดเอง (พฤติกรรมซับซ้อน ผูกกับแอป) · dialog (ธีมผ่าน ThemeData อยู่แล้ว ไม่สร้างซ้ำ) · ชุด component ใหญ่แบบ Bootstrap ครบทุกตัว
+- **ไม่แก้แอปจริงและไม่แก้สำเนาทดลอง** ในเฟสนี้ (ย้ายแอปไปใช้ = งานแยกที่ผู้ใช้ตัดสินใจเองทีละแอป) · **ไม่ยุ่งกับ Launcher** (ตั้งใจไม่พึ่ง `nsl_ui`)
+- ไม่เพิ่ม dependency (ยังพึ่งแค่ Flutter SDK) · ไม่เปลี่ยน/ลบ API เดิมที่ export อยู่ · ไม่แตะ schema `.nslt` (component อ่าน token ที่มีอยู่)
+
+**กติกาออกแบบ:**
+1. ทุกค่ามาจาก token : สี `colors`, มุมโค้ง `shape` (xs–pill), ขนาดตัวอักษรผ่าน `type.fit`, ระยะ/ความสูงตาม `density` ; **ไม่มี `Color(0x…)` และ `BorderRadius.circular(<ตัวเลข>)` ในไฟล์ component** (เทสต์ guard)
+2. เข้าถึง token ผ่าน `NslTheme` (ThemeExtension) + `context.nsl` ; **ถ้าแอปยังไม่ได้ใส่ extension → ใช้ token ธีมในตัวตามโหมดของ `Theme.of(context)`** เพื่อให้ใช้ได้ทุกที่โดยไม่พัง
+3. จอสัมผัส : พื้นที่แตะ ≥ `kMinTapTarget` (44) · Semantics ครบ (button/enabled/label/selected) · โฟกัสคีย์บอร์ดเห็นได้
+4. สถานะ disabled/hover/pressed/focus ครบ · ข้อความยาวตัดด้วย ellipsis ไม่ overflow ที่ scale 1.2 และ density ทั้งสามแบบ
+5. คู่สีที่ใช้ต้องผ่านเกณฑ์ contrast เดียวกับตัวตรวจของ core (เทสต์ผ่านทุกธีมในตัว × 2 โหมด)
+6. เพิ่มเข้า `NslGallery` (ส่วน "Components") เพื่อพรีวิว ; export จาก `nsl_ui.dart` ; เวอร์ชัน → 1.2.0 + `CHANGELOG.md`
+
+**เฟส:**
+- **เฟส 13 — รากฐาน** : `NslTheme`/`context.nsl` + fallback · เทสต์ guard (ห้ามสี/มุมโค้งฮาร์ดโค้ด) · ✔ เสร็จเมื่อ: อ่าน token ได้ทั้งมีและไม่มี extension, เทสต์เดิม 154 ข้อยังผ่าน
+- **เฟส 14 — ปุ่มและแผง** : `NslButton`, `NslIconButton`, `NslPanel`, `NslBadge` + เทสต์ (ทุกสถานะ, ทุกธีมในตัว, density × scale, contrast, semantics) + ใส่ใน Gallery
+- **เฟส 15 — ความคืบหน้าและสถานะว่าง** : `NslProgressBar`, `NslEmptyState` + เทสต์ + Gallery + ปรับเวอร์ชัน 1.2.0 / CHANGELOG / README
+- (ภายหลัง ถ้ามีแอปที่สองต้องใช้) `NslSegmented`, `NslKbd`
