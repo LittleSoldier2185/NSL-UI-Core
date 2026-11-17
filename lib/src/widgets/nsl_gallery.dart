@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../components/nsl_alert.dart';
 import '../components/nsl_badge.dart';
 import '../components/nsl_button.dart';
 import '../components/nsl_color_picker.dart';
@@ -87,6 +88,15 @@ class _Components extends StatelessWidget {
         NslButton(label: 'Nsl small', size: NslButtonSize.sm, onPressed: noop),
         NslButton(label: 'Nsl large', size: NslButtonSize.lg, onPressed: noop),
       ]),
+      SizedBox(height: gap),
+      SizedBox(
+        width: 320,
+        child: Column(children: [
+          const NslAlert(title: 'Nsl alert', message: 'info', tone: NslAlertTone.info),
+          SizedBox(height: gap),
+          NslAlert(message: 'Nsl alert danger', tone: NslAlertTone.danger, onClose: noop, closeTooltip: 'Nsl close'),
+        ]),
+      ),
       SizedBox(height: gap),
       Wrap(spacing: gap, runSpacing: gap, crossAxisAlignment: WrapCrossAlignment.center, children: [
         NslIconButton(icon: Icons.add, tooltip: 'Add', onPressed: noop),
