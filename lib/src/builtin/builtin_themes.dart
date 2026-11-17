@@ -10,6 +10,7 @@ const kBuiltinDefaultId = 'nsl.default';
 const kBuiltinDevId = 'nsl.nebular';
 const kBuiltinResonanceId = 'nsl.spectrum';
 const kBuiltinLyraPaperId = 'nsl.lyra.paper';
+const kBuiltinOrbitId = 'nsl.orbit';
 
 /// accent เริ่มต้นของ Resonance (Amber)
 const kResonanceDefaultAccent = Color(0xFFF4B860);
@@ -281,13 +282,67 @@ final NslThemeSpec kBuiltinLyraPaper = NslThemeSpec(
   ),
 );
 
+/// Orbit (NSL Utility) : พาเลตต์ global ใน `ui.dart` (bg/card/line/ink/sub/…) + accent ชุดแรก "เขียวน้ำทะเล"
+///
+/// การจับคู่: bg→bg · card→surface · segSel→surfaceRaised (โหมดมืดยกขึ้น) · segTrack→surfaceSunken · line→border ·
+/// divider→borderSoft · barGrey→borderStrong · faint→textFaint · ink→text · sub→textMuted ·
+/// accent/accentSoft/accentDark→accent/accentTint/accentInk · okGreen→success · onAccent = ขาว (ปุ่ม accent ของ Orbit ใช้ตัวอักษรขาว)
+/// มุมโค้ง: ปุ่ม/ช่องกรอก 12, dialog 20, แผ่นล่าง 24
+/// accent ชุดอื่นของ Orbit (น้ำเงิน, ม่วง, …) = ค่า lite (accent) ทับธีมนี้ — tint/ink ที่ derive อาจต่างจากตารางตายตัวของแอปเดิมเล็กน้อย
+final NslThemeSpec kBuiltinOrbit = NslThemeSpec(
+  id: kBuiltinOrbitId,
+  name: 'NSL Orbit',
+  light: const NslModeSpec(
+    colors: {
+      'bg': Color(0xFFF2F4F6),
+      'surface': Color(0xFFFFFFFF),
+      'surfaceRaised': Color(0xFFFFFFFF),
+      'surfaceSunken': Color(0xFFE3E8EC),
+      'borderSoft': Color(0xFFEEF1F4),
+      'border': Color(0xFFE3E8EC),
+      'borderStrong': Color(0xFFC9D1D8),
+      'text': Color(0xFF14202B),
+      'textMuted': Color(0xFF5F6E7B),
+      'textFaint': Color(0xFFA9B4BE),
+      'accent': Color(0xFF0B6E7A),
+      'accentInk': Color(0xFF08525B),
+      'accentTint': Color(0xFFD8EEF0),
+      'onAccent': Color(0xFFFFFFFF),
+      'danger': Color(0xFFD03B3B),
+      'success': Color(0xFF12855C),
+    },
+  ),
+  dark: const NslModeSpec(
+    colors: {
+      'bg': Color(0xFF0B0F13),
+      'surface': Color(0xFF151C22),
+      'surfaceRaised': Color(0xFF2B3843),
+      'surfaceSunken': Color(0xFF0E141A),
+      'borderSoft': Color(0xFF1E272F),
+      'border': Color(0xFF26313A),
+      'borderStrong': Color(0xFF34414C),
+      'text': Color(0xFFE8EDF1),
+      'textMuted': Color(0xFFA2B0BC),
+      'textFaint': Color(0xFF566471),
+      'accent': Color(0xFF1B8C9A),
+      'accentInk': Color(0xFF8ADAE3),
+      'accentTint': Color(0xFF1C3F45),
+      'onAccent': Color(0xFFFFFFFF),
+      'danger': Color(0xFFD03B3B),
+      'success': Color(0xFF3FBF8C),
+    },
+  ),
+  radius: {'xs': 6, 'sm': 10, 'md': 12, 'lg': 20, 'xl': 24},
+);
+
 /// ธีมในตัวทั้งหมดตาม id (Resonance ใช้ accent เริ่มต้น)
 NslThemeSpec? builtinThemeById(String id) => switch (id) {
       kBuiltinDefaultId => kBuiltinDefault,
       kBuiltinDevId => kBuiltinDev,
       kBuiltinResonanceId => builtinResonance(),
       kBuiltinLyraPaperId => kBuiltinLyraPaper,
+      kBuiltinOrbitId => kBuiltinOrbit,
       _ => null,
     };
 
-const kBuiltinThemeIds = <String>[kBuiltinDefaultId, kBuiltinDevId, kBuiltinResonanceId, kBuiltinLyraPaperId];
+const kBuiltinThemeIds = <String>[kBuiltinDefaultId, kBuiltinDevId, kBuiltinResonanceId, kBuiltinLyraPaperId, kBuiltinOrbitId];

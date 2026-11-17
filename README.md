@@ -39,7 +39,7 @@ dependencies:
 - **Contrast** — ตรวจและรายงาน contrast รวมถึงสี `#RRGGBBAA` ที่มีความโปร่งใส
 - **รูปแบบ `.nslt`** — parse / serialize / resolve (สืบทอดธีม, ตรวจวนลูป, clamp ค่า) ทนไฟล์ผิดรูปแบบโดยไม่โยน exception
 - **ที่เก็บธีม** — `NslThemeStore`, `NslThemeController`, `NslMemoryThemeStorage` พร้อม watcher และ safe mode
-- **ธีมในตัว** — `nsl.default`, `nsl.nebular`, `nsl.spectrum`, `nsl.lyra.paper` (id เหล่านี้ห้ามเปลี่ยน)
+- **ธีมในตัว** — `nsl.default`, `nsl.nebular`, `nsl.spectrum`, `nsl.lyra.paper`, `nsl.orbit` (id เหล่านี้ห้ามเปลี่ยน)
 - **Widget** — `NslAppearancePanel` (ชุดปรับแต่ง lite) และ `NslGallery`
 - **ThemeData กลาง** — `buildNslThemeData(tokens)` สร้าง `ThemeData` จาก token (ColorScheme + ตัวควบคุมของ Material ทั้งหมด + แนบ `NslTheme`) : `MaterialApp(theme: buildNslThemeData(resolveTokens(spec, Brightness.light)), darkTheme: buildNslThemeData(resolveTokens(spec, Brightness.dark)))`
 - **Component กลาง** — `NslButton`, `NslIconButton`, `NslPanel`, `NslBadge`, `NslProgressBar`, `NslEmptyState`, `NslListRow`, `NslNavItem`, `NslColorPicker` ; อ่านค่าทั้งหมดจาก token ผ่าน `context.nsl` (ไม่ได้แนบ `NslTheme` ก็ใช้ได้ — ถอยไปธีมในตัว) ; ใส่ธีมให้ทั้งต้นไม้ด้วย `ThemeData(extensions: [NslTheme(tokens)])` หรือเฉพาะบางส่วนด้วย `NslThemeScope(tokens:, child:)` ; ดูหน้าตาทั้งหมดได้ใน `NslGallery`

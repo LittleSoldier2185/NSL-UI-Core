@@ -10,6 +10,7 @@ export const kBuiltinDefaultId = 'nsl.default';
 export const kBuiltinNebularId = 'nsl.nebular';
 export const kBuiltinSpectrumId = 'nsl.spectrum';
 export const kBuiltinLyraPaperId = 'nsl.lyra.paper';
+export const kBuiltinOrbitId = 'nsl.orbit';
 
 export const builtinSpecs: Readonly<Record<string, ThemeSpec>> = Object.fromEntries(
   Object.entries(builtinTexts as Record<string, string>).map(([id, text]) => {

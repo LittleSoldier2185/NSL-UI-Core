@@ -479,6 +479,10 @@
     {
       "id": "nsl.lyra.paper",
       "name": "Lyra Paper"
+    },
+    {
+      "id": "nsl.orbit",
+      "name": "NSL Orbit"
     }
   ],
   "limits": {

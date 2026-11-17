@@ -1,4 +1,4 @@
-import { kBuiltinDefaultId, kBuiltinLyraPaperId, kBuiltinNebularId, kBuiltinSpectrumId } from './core/builtin';
+import { kBuiltinDefaultId, kBuiltinLyraPaperId, kBuiltinNebularId, kBuiltinOrbitId, kBuiltinSpectrumId } from './core/builtin';
 import { schema } from './core/tokens';
 
 export type AppId = 'nebular' | 'spectrum' | 'lyra' | 'orbit';
@@ -57,7 +57,7 @@ export const apps: readonly AppInfo[] = [
     id: 'orbit',
     name: 'Orbit',
     product: 'NSL Utility',
-    baseId: kBuiltinDefaultId,
+    baseId: kBuiltinOrbitId,
     status: 'planned',
     support: { colors: 'none', accent: 'none', ext: 'none', shape: 'none', type: 'none', fonts: 'none', density: 'none', elevation: 'none' },
   },
