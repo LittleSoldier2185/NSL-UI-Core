@@ -43,3 +43,13 @@ describe('ฟอนต์อักษรไทยแยกช่อง', () => {
     expect([back.familyThai, back.monoThai]).toEqual(['Sarabun', 'Mali']);
   });
 });
+
+describe('คีย์ที่ไม่รู้จักใน type (ตรงกับ Dart)', () => {
+  it('ถูกเก็บและเขียนกลับ ไม่หายเมื่อบันทึกทับ', async () => {
+    const { parseNslt, serializeNslt } = await import('../src/core/nslt');
+    const r = parseNslt('{"schema":1,"core":"9.9","id":"f","name":"F","extends":"nsl.nebular","type":{"familyThai":"Sarabun","futureKey":{"a":[1,2]}}}');
+    const out = serializeNslt(r.spec!);
+    expect(out).toContain('futureKey');
+    expect(out).toContain('Sarabun');
+  });
+});

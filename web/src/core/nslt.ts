@@ -174,6 +174,13 @@ function parseInner(source: string): ParseResult {
   const unknown: Record<string, unknown> = {};
   for (const [k, val] of Object.entries(root)) if (!known.has(k)) unknown[k] = val;
   if (appsRaw) unknown.apps = root.apps;
+  // คีย์ใน type ที่ไม่รู้จัก เก็บไว้ใต้ unknown.type แล้วผสานกลับตอนเขียน (ตรงกับ Dart)
+  if (isObj(root.type)) {
+    const knownType = new Set(['family', 'content', 'mono', 'familyThai', 'contentThai', 'monoThai', 'minSize', 'scale']);
+    const extra: Obj = {};
+    for (const [k, val] of Object.entries(root.type)) if (!knownType.has(k)) extra[k] = val;
+    if (Object.keys(extra).length > 0) unknown.type = extra;
+  }
 
   const spec: ThemeSpec = { schema: sch, id, name: name as string, light, dark, radius, unknown };
   if (core !== undefined) spec.core = core;
@@ -303,6 +310,7 @@ export function serializeNslt(s: ThemeSpec): string {
   if (s.monoThai !== undefined) type.monoThai = s.monoThai;
   if (s.minSize !== undefined) type.minSize = s.minSize;
   if (s.scale !== undefined) type.scale = s.scale;
+  if (isObj(s.unknown.type)) for (const [k, v] of Object.entries(s.unknown.type)) if (!(k in type)) type[k] = v;
   if (Object.keys(type).length > 0) out.type = type;
   if (s.density !== undefined) out.density = s.density;
   const el: Obj = {};

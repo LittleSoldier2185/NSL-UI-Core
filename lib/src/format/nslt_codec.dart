@@ -186,6 +186,12 @@ NsltParseResult _parse(String source) {
 
   const known = {'schema', 'core', 'id', 'name', 'extends', 'light', 'dark', 'shape', 'type', 'density', 'elevation', 'apps'};
   final unknown = <String, Object?>{for (final e in root.entries) if (!known.contains(e.key)) e.key: e.value, if (appsRaw) 'apps': appsV};
+  // คีย์ใน type ที่รุ่นนี้ไม่รู้จัก (เช่น ฟอนต์บทบาทใหม่ของ core รุ่นหลัง) เก็บไว้ใต้ unknown['type'] แล้วผสานกลับตอนเขียน — ไม่ให้หายเมื่อแอปรุ่นเก่าบันทึกทับ
+  if (type is Map<String, Object?>) {
+    const knownType = {'family', 'content', 'mono', 'familyThai', 'contentThai', 'monoThai', 'minSize', 'scale'};
+    final extra = <String, Object?>{for (final e in type.entries) if (!knownType.contains(e.key)) e.key: e.value};
+    if (extra.isNotEmpty) unknown['type'] = extra;
+  }
 
   return NsltParseResult(
     spec: NslThemeSpec(
@@ -355,6 +361,12 @@ String serializeNslt(NslThemeSpec s) {
     if (s.minSize != null) 'minSize': _jsonNum(s.minSize!),
     if (s.scale != null) 'scale': _jsonNum(s.scale!),
   };
+  final extraType = s.unknown['type'];
+  if (extraType is Map) {
+    for (final e in extraType.entries) {
+      if (e.key is String) type.putIfAbsent(e.key as String, () => e.value);
+    }
+  }
   if (type.isNotEmpty) out['type'] = type;
   if (s.density != null) out['density'] = s.density!.name;
   final el = <String, Object?>{
