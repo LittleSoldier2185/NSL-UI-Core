@@ -216,7 +216,7 @@
   "extensions": [
     {
       "name": "nebular",
-      "app": "Nebular (NSL Dev)",
+      "app": "Nebular (NSL Nebular)",
       "keys": [
         "canvas",
         "dot",
@@ -230,7 +230,25 @@
         "boardOutside",
         "boardEdge",
         "fkSource",
-        "fkChip"
+        "fkChip",
+        "docEr",
+        "docErInk",
+        "docErTint",
+        "docDfd",
+        "docDfdInk",
+        "docDfdTint",
+        "docFlow",
+        "docFlowInk",
+        "docFlowTint",
+        "docWire",
+        "docWireInk",
+        "docWireTint",
+        "docScreen",
+        "docScreenInk",
+        "docScreenTint",
+        "docApi",
+        "docApiInk",
+        "docApiTint"
       ],
       "accentDependents": [
         "fkChip"

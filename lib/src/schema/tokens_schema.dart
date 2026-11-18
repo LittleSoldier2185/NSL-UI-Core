@@ -50,7 +50,7 @@ const _since = <String, String>{};
 
 /// แอปที่ใช้ส่วนขยาย (ชื่อที่ผู้ใช้เห็น)
 const _extensionApps = <String, String>{
-  'nebular': 'Nebular (NSL Dev)',
+  'nebular': 'Nebular (NSL Nebular)',
   'spectrum': 'Spectrum (NSL Resonance)',
   'lyra': 'Lyra (NSL Writer Tools)',
 };

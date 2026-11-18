@@ -22,7 +22,7 @@ class NslExtensionDef {
 
 Color _mix(Color a, Color b, double t) => Color.lerp(a, b, t)!;
 
-/// ส่วนขยายของ NSL Dev (แคนวาส ER/DFD: พื้นกระดาน, หัวตาราง, ป้าย PK/UQ/NN, ไฮไลต์ FK)
+/// ส่วนขยายของ NSL Nebular (เดิมชื่อ NSL Dev) (แคนวาส ER/DFD: พื้นกระดาน, หัวตาราง, ป้าย PK/UQ/NN, ไฮไลต์ FK)
 const kDevExtension = NslExtensionDef('nebular', [
   'canvas',
   'dot',
@@ -37,11 +37,60 @@ const kDevExtension = NslExtensionDef('nebular', [
   'boardEdge',
   'fkSource',
   'fkChip',
+  // สีประจำชนิดเอกสารของ NSL Nebular : หลัก = จุด/เส้น/ขอบ, Ink = ตัวอักษรบนพื้นอ่อน, Tint = พื้นอ่อน (เพิ่มหลัง core 1.1)
+  'docEr',
+  'docErInk',
+  'docErTint',
+  'docDfd',
+  'docDfdInk',
+  'docDfdTint',
+  'docFlow',
+  'docFlowInk',
+  'docFlowTint',
+  'docWire',
+  'docWireInk',
+  'docWireTint',
+  'docScreen',
+  'docScreenInk',
+  'docScreenTint',
+  'docApi',
+  'docApiInk',
+  'docApiTint',
 ], _deriveDev, accentDependents: ['fkChip']);
+
+/// สีประจำชนิดเอกสาร (โหมดสว่าง): ชนิด → (หลัก, ตัวอักษรบนพื้นอ่อน, พื้นอ่อน)
+/// ตั้งใจให้คงที่ ไม่ตาม accent เพื่อให้จำชนิดเอกสารจากสีได้เสมอ ; ตัวอักษร/พื้นอ่อนทุกคู่ต้องผ่าน 4.5:1 (เทสต์ `doc_colors_test`)
+const _docLight = <String, (int, int, int)>{
+  'Er': (0xFF0F766E, 0xFF0B5A54, 0xFFE2F3F1),
+  'Dfd': (0xFF2F6FB5, 0xFF1E4F8A, 0xFFE8EEF8),
+  'Flow': (0xFF6D4FC2, 0xFF553BA0, 0xFFF3F0FC),
+  'Wire': (0xFFB7791F, 0xFF8A5A12, 0xFFFFF4D6),
+  'Screen': (0xFFB83B6B, 0xFF8F2A52, 0xFFFCE8F0),
+  'Api': (0xFF0E7490, 0xFF155E75, 0xFFE0F2F7),
+};
+
+Map<String, Color> _deriveDocColors(NslColors c, bool light) {
+  const white = Color(0xFFFFFFFF);
+  final out = <String, Color>{};
+  for (final e in _docLight.entries) {
+    final main = Color(e.value.$1);
+    if (light) {
+      out['doc${e.key}'] = main;
+      out['doc${e.key}Ink'] = Color(e.value.$2);
+      out['doc${e.key}Tint'] = Color(e.value.$3);
+    } else {
+      out['doc${e.key}'] = _mix(main, white, 0.2);
+      out['doc${e.key}Ink'] = _mix(main, white, 0.55);
+      out['doc${e.key}Tint'] = Color.alphaBlend(main.withValues(alpha: 0.2), c.surface);
+    }
+  }
+  return out;
+}
 
 Map<String, Color> _deriveDev(NslColors c, Brightness b) {
   final light = b == Brightness.light;
   return {
+    ..._deriveDocColors(c, light),
     'canvas': _mix(c.bg, c.surface, 0.5),
     'dot': c.border,
     'tableHead': light ? c.text : _mix(c.surface, c.text, 0.12),

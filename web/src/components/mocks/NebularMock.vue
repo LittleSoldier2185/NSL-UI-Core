@@ -5,9 +5,16 @@ import { onAccentFor } from '../../core/contrast';
 import type { NslTokens } from '../../core/tokens';
 import { mockText } from './mockText';
 
-// หน้าตาโดยประมาณของ Nebular (NSL Dev): แคนวาส ER — พื้นกระดาน, หัวตาราง, ป้าย PK/UQ/NN, แถว FK ที่ไฮไลต์
+// หน้าตาโดยประมาณของ Nebular: แคนวาส ER — พื้นกระดาน, หัวตาราง, ป้าย PK/UQ/NN, แถว FK ที่ไฮไลต์ + แท็บสีประจำชนิดเอกสาร
 const props = defineProps<{ tokens: NslTokens }>();
 const headInk = computed(() => toHex(onAccentFor(props.tokens.extensions.nebular!.tableHead!)));
+// ลำดับตรงกับ mockText.nebular.docs (ER, DFD, Flowchart, Wireframe, Screen Flow, API)
+const docKeys = ['Er', 'Dfd', 'Flow', 'Wire', 'Screen', 'Api'];
+const docStyle = (k: string) => ({
+  '--d': `var(--e-nebular-doc${k})`,
+  '--di': `var(--e-nebular-doc${k}Ink)`,
+  '--dt': `var(--e-nebular-doc${k}Tint)`,
+});
 </script>
 
 <template>
@@ -15,6 +22,9 @@ const headInk = computed(() => toHex(onAccentFor(props.tokens.extensions.nebular
     <div class="tools">
       <span class="tool on">{{ mockText.nebular.select }}</span><span class="tool">{{ mockText.nebular.table }}</span><span class="tool">{{ mockText.nebular.relation }}</span>
       <span class="sp"></span><span class="muted">ER · schema.sql</span>
+    </div>
+    <div class="doctabs">
+      <span v-for="(k, i) in docKeys" :key="k" class="dt" :style="docStyle(k)"><i></i>{{ mockText.nebular.docs[i] }}</span>
     </div>
     <div class="outside">
       <div class="canvas">
@@ -65,6 +75,30 @@ const headInk = computed(() => toHex(onAccentFor(props.tokens.extensions.nebular
   background: var(--c-accentTint);
   color: var(--c-accentInk);
   border-color: var(--c-accentBorder);
+}
+.doctabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px var(--pad-lg);
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-borderSoft);
+  font-size: var(--fs-sm);
+}
+.dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 8px;
+  border-radius: var(--r-sm);
+  background: var(--dt);
+  color: var(--di);
+}
+.dt i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--d);
 }
 .sp {
   flex: 1;

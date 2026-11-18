@@ -5,6 +5,10 @@
 
 ## Unreleased — 2026-11-17 (ยังพัฒนา ยังไม่กำหนดเลขเวอร์ชัน)
 
+> **อัปเดต 2026-11-18:** ชุดนี้มี token ใหม่ใน `nebular` ด้วย (ด้านล่าง) จึง **ต้องกำหนดเป็น core 1.2 ตอนปล่อย** (ยังไม่ขยับ `kNslCoreVersion`) — ประโยคถัดไปที่บอกว่า "ไม่แตะ token/schema" ใช้กับรายการเดิมเท่านั้น
+
+- **สีประจำชนิดเอกสารของ NSL Nebular** (ส่วนขยาย `nebular`, เพิ่มอย่างเดียว): `docEr`, `docDfd`, `docFlow`, `docWire`, `docScreen`, `docApi` × 3 (หลัก / `…Ink` ตัวอักษรบนพื้นอ่อน / `…Tint` พื้นอ่อน) = 18 คีย์ ; ธีมที่ไม่ระบุได้ค่า derive ครบ (โหมดสว่างตรงกับดีไซน์ ; โหมดมืดคำนวณจากสีหลัก) ; ตั้งใจ **ไม่ตาม accent** เพื่อให้จำชนิดเอกสารจากสีได้ ; ทุกคู่ Ink/Tint ผ่าน 4.5:1 ทั้งสองโหมด (`test/doc_colors_test.dart`) ; อัปเดต schema + fixture เว็บ + พอร์ต TS (`web/src/core/extensions.ts`) + แท็บชนิดเอกสารในพรีวิว Nebular ของเว็บ ; ป้ายแอปของ `nebular` ใน schema เปลี่ยนเป็น "Nebular (NSL Nebular)"
+
 เพิ่มอย่างเดียว — **ชุด component กลาง** (Dart เท่านั้น) ; **ไม่แตะ token / schema / รูปแบบไฟล์ `.nslt`** จึง **`kNslCoreVersion` ยังเป็น `1.1`** และ `pubspec.yaml` ยังเป็น 1.1.0 (เว็บ NSL Palette, fixture, ตราในไฟล์ธีม และแอปที่ใช้ core 1.1 ไม่ต้องเปลี่ยนอะไร) — จะกำหนดเลขตอนปล่อย
 
 - **`buildNslThemeData(tokens, {platform})`** : สร้าง `ThemeData` ของ Material จาก token ทั้งชุด (ColorScheme ครบ + component themes ของปุ่ม/ช่องกรอก/dialog/เมนู/snackbar/tooltip/switch/checkbox/radio/chip/segmented/slider/listTile/tab/navigationBar ฯลฯ) พร้อมแนบ `NslTheme` — ตัวควบคุมของ Material ตรงกับ component ของ nsl_ui ; เพิ่มอย่างเดียว แอปที่มี `buildTheme` เองใช้ต่อได้

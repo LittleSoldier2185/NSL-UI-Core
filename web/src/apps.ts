@@ -29,7 +29,7 @@ export const apps: readonly AppInfo[] = [
   {
     id: 'nebular',
     name: 'Nebular',
-    product: 'NSL Dev',
+    product: 'NSL Nebular',
     extension: 'nebular',
     baseId: kBuiltinNebularId,
     status: 'experiment',

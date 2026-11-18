@@ -31,7 +31,7 @@ const text = {
       dangerSolid: 'สีอันตราย (ไอคอน/ปุ่มลบ)',
       successSolid: 'สีสำเร็จ (ไอคอน/กราฟ)',
     },
-    nebular: { select: 'เลือก', table: 'ตาราง', relation: 'ความสัมพันธ์' },
+    nebular: { select: 'เลือก', table: 'ตาราง', relation: 'ความสัมพันธ์', docs: ['ER', 'DFD', 'Flowchart', 'Wireframe', 'Screen Flow', 'API'] },
     spectrum: { playlist: 'รายการเล่น', tracks: ['Aurora Borealis', 'Midnight Signal', 'ท้องฟ้าหลังฝน', 'Low Orbit'] },
     lyra: {
       world: 'โลกของฉัน',
@@ -88,7 +88,7 @@ const text = {
       dangerSolid: 'Danger (icons/delete)',
       successSolid: 'Success (icons/charts)',
     },
-    nebular: { select: 'Select', table: 'Table', relation: 'Relation' },
+    nebular: { select: 'Select', table: 'Table', relation: 'Relation', docs: ['ER', 'DFD', 'Flowchart', 'Wireframe', 'Screen Flow', 'API'] },
     spectrum: { playlist: 'Playlist', tracks: ['Aurora Borealis', 'Midnight Signal', 'After the Rain', 'Low Orbit'] },
     lyra: {
       world: 'My world',
